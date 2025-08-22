@@ -43,10 +43,16 @@ function App() {
             
             setUploadedAudios(formattedAudios);
             
-            // Auto-play the first song if auto-play is enabled
+            // Auto-play the first song if auto-play is enabled and data is complete
             if (config.autoPlay.enabled && formattedAudios.length > 0) {
-              console.log('🎵 Auto-playing first song from server');
-              handleAutoPlay(formattedAudios[0]);
+              const firstSong = formattedAudios[0];
+              // Safety check: Only auto-play if we have complete data
+              if (firstSong.type && firstSong.size) {
+                console.log('🎵 Auto-playing first song from server');
+                handleAutoPlay(firstSong);
+              } else {
+                console.log('⚠️ Skipping auto-play - incomplete song data:', firstSong);
+              }
             }
           }
         }
@@ -220,19 +226,50 @@ function App() {
             />
           )}
 
-          {/* Radio Player */}
+          {/* Radio Player - Only render when we have complete data */}
           {streamUrl && (
-            <RadioPlayer
-              streamUrl={streamUrl}
-              onPlayStateChange={handlePlayStateChange}
-              onNowPlayingChange={handleNowPlayingChange}
-              onConnectionStatusChange={handleConnectionStatusChange}
-              isPlaying={isPlaying}
-              nowPlaying={nowPlaying}
-              connectionStatus={connectionStatus}
-              audioMode={audioMode}
-              currentAudio={currentAudio}
-            />
+            <>
+              {/* Safety check: Don't render RadioPlayer in upload mode without complete audio data */}
+              {audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) ? (
+                <div className="mt-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-center">
+                  <p className="text-red-300">
+                    ⚠️ Audio data incomplete. Please select a file from the list above.
+                  </p>
+                  <p className="text-xs text-red-400 mt-2">
+                    Debug: audioMode={audioMode}, hasType={!!currentAudio?.type}, hasSize={!!currentAudio?.size}
+                  </p>
+                </div>
+              ) : (
+                <RadioPlayer
+                  streamUrl={streamUrl}
+                  onPlayStateChange={handlePlayStateChange}
+                  onNowPlayingChange={handleNowPlayingChange}
+                  onConnectionStatusChange={handleConnectionStatusChange}
+                  isPlaying={isPlaying}
+                  nowPlaying={nowPlaying}
+                  connectionStatus={connectionStatus}
+                  audioMode={audioMode}
+                  currentAudio={currentAudio}
+                />
+              )}
+            </>
+          )}
+
+          {/* Safety Message for Upload Mode */}
+          {audioMode === 'upload' && !currentAudio && (
+            <div className="mt-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-center">
+              <p className="text-yellow-300">
+                🎵 Select an audio file from the list above to start playing
+              </p>
+            </div>
+          )}
+
+          {/* Debug Info */}
+          {process.env.NODE_ENV === 'development' && (
+            <div className="mt-4 p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-xs text-gray-400">
+              <p><strong>Debug:</strong> audioMode={audioMode}, hasCurrentAudio={!!currentAudio}, hasStreamUrl={!!streamUrl}</p>
+              <p><strong>Current Audio:</strong> {currentAudio ? `${currentAudio.name} (${currentAudio.type})` : 'None'}</p>
+            </div>
           )}
 
           {/* Safety Message for Upload Mode */}
