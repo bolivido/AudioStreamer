@@ -73,6 +73,12 @@ const RadioPlayer = ({
       console.log(`🎵 Cannot play: missing streamUrl or audio element`);
       return;
     }
+    
+    // Additional safety check for upload mode
+    if (safeAudioMode === 'upload' && (!safeCurrentAudio || !safeCurrentAudio.type)) {
+      console.log(`🎵 Cannot play: incomplete audio data for upload mode`);
+      return;
+    }
 
     try {
       setIsLoading(true);
@@ -248,25 +254,29 @@ const RadioPlayer = ({
 
 
 
+  // Safety check: if we're in upload mode but currentAudio is incomplete, fall back to stream mode
+  const safeAudioMode = audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) ? 'stream' : audioMode;
+  const safeCurrentAudio = safeAudioMode === 'upload' ? currentAudio : null;
+
   return (
     <div className="card">
       {/* Now Playing Display */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-semibold text-white mb-2">
-          {isPlaying ? 'Now Playing' : audioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
+          {isPlaying ? 'Now Playing' : safeAudioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
         </h2>
         <p className="text-lg text-gray-300">
           {nowPlaying}
         </p>
-        {audioMode === 'upload' && currentAudio && (
+        {safeAudioMode === 'upload' && safeCurrentAudio && (
           <div className="text-sm text-gray-400 mt-1 space-y-1">
-            <p>{currentAudio.type.split('/')[1].toUpperCase()} • {Math.round(currentAudio.size / 1024)} KB</p>
-            {currentAudio.duration > 0 && (
-              <p>Duration: {Math.floor(currentAudio.duration / 60)}:{Math.floor(currentAudio.duration % 60).toString().padStart(2, '0')}</p>
+            <p>{safeCurrentAudio.type.split('/')[1]?.toUpperCase() || 'AUDIO'} • {Math.round(safeCurrentAudio.size / 1024)} KB</p>
+            {safeCurrentAudio.duration && safeCurrentAudio.duration > 0 && (
+              <p>Duration: {Math.floor(safeCurrentAudio.duration / 60)}:{Math.floor(safeCurrentAudio.duration % 60).toString().padStart(2, '0')}</p>
             )}
           </div>
         )}
-        {audioMode === 'stream' && metadata.artist && (
+        {safeAudioMode === 'stream' && metadata.artist && (
           <p className="text-sm text-gray-400 mt-1">
             {metadata.artist} • {metadata.album}
           </p>
@@ -324,11 +334,11 @@ const RadioPlayer = ({
 
         {/* Source Display */}
         <div className="text-center">
-          {audioMode === 'upload' ? (
+          {safeAudioMode === 'upload' ? (
             <>
               <p className="text-xs text-gray-500 mb-1">Audio File</p>
               <p className="text-sm text-gray-400 font-medium">
-                {currentAudio?.name || 'Unknown File'}
+                {safeCurrentAudio?.name || 'Unknown File'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 Local file • No connection needed
@@ -368,7 +378,7 @@ const RadioPlayer = ({
 
       {/* Status Display */}
       <div className="mt-6 text-center space-y-2">
-        {audioMode === 'upload' ? (
+        {safeAudioMode === 'upload' ? (
           <div className="inline-flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
             <span className="text-xs text-gray-400">
