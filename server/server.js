@@ -20,11 +20,26 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files from React build
 const buildPath = path.join(__dirname, 'build');
+let hasBuildFiles = false;
+
 if (fs.existsSync(buildPath)) {
-  console.log(`📁 Serving React build from: ${buildPath}`);
-  app.use(express.static(buildPath));
+  try {
+    const buildFiles = fs.readdirSync(buildPath);
+    if (buildFiles.length > 0) {
+      console.log(`📁 Serving React build from: ${buildPath}`);
+      console.log(`📦 Build contains ${buildFiles.length} files/directories`);
+      app.use(express.static(buildPath));
+      hasBuildFiles = true;
+    } else {
+      console.log(`⚠️  Build directory is empty: ${buildPath}`);
+    }
+  } catch (error) {
+    console.log(`⚠️  Error reading build directory: ${error.message}`);
+  }
 } else {
   console.log(`⚠️  React build not found at: ${buildPath}`);
+  console.log(`📂 Current directory: ${__dirname}`);
+  console.log(`📂 Parent directory contents: ${fs.readdirSync(__dirname).join(', ')}`);
 }
 
 // Rate limiting for uploads
@@ -264,6 +279,33 @@ function formatBytes(bytes) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 }
 
+// Server startup validation
+function validateServerStartup() {
+  try {
+    // Check if upload directory can be created
+    fs.ensureDirSync(UPLOAD_DIR);
+    console.log(`✅ Upload directory ready: ${UPLOAD_DIR}`);
+    
+    // Check if we can write to upload directory
+    const testFile = path.join(UPLOAD_DIR, '.test');
+    fs.writeFileSync(testFile, 'test');
+    fs.unlinkSync(testFile);
+    console.log(`✅ Upload directory is writable`);
+    
+    // Check build status
+    if (hasBuildFiles) {
+      console.log(`✅ React frontend ready`);
+    } else {
+      console.log(`⚠️  React frontend not available - API only mode`);
+    }
+    
+    return true;
+  } catch (error) {
+    console.error(`❌ Server validation failed: ${error.message}`);
+    return false;
+  }
+}
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
@@ -271,24 +313,43 @@ app.get('/api/health', (req, res) => {
 
 // Serve React app for any non-API routes (client-side routing)
 app.get('*', (req, res) => {
-  if (fs.existsSync(buildPath)) {
+  if (hasBuildFiles) {
     res.sendFile(path.join(buildPath, 'index.html'));
   } else {
-    res.status(404).json({ 
-      message: 'React build not found. Please build the frontend first.',
-      buildPath: buildPath,
-      currentDir: __dirname
+    // Fallback when React build is not available
+    res.status(200).json({
+      message: 'Audio Streamer API Server',
+      status: 'running',
+      frontend: 'not available',
+      api: {
+        health: '/api/health',
+        upload: '/api/upload',
+        audio: '/api/audio',
+        stream: '/api/stream',
+        storage: '/api/storage'
+      },
+      note: 'React frontend build not found. Server running in API-only mode.'
     });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`🚀 Audio Streamer Server running on port ${PORT}`);
-  console.log(`📁 Upload directory: ${UPLOAD_DIR}`);
-  console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
-  if (fs.existsSync(buildPath)) {
-    console.log(`🌐 React frontend served from: ${buildPath}`);
+  console.log(`🚀 Audio Streamer Server starting on port ${PORT}`);
+  
+  // Validate server startup
+  if (validateServerStartup()) {
+    console.log(`✅ Server validation successful`);
+    console.log(`📁 Upload directory: ${UPLOAD_DIR}`);
+    console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
+    if (hasBuildFiles) {
+      console.log(`🌐 React frontend served from: ${buildPath}`);
+    } else {
+      console.log(`⚠️  React frontend build not found at: ${buildPath}`);
+      console.log(`🔧 Server running in API-only mode`);
+    }
+    console.log(`🚀 Audio Streamer Server ready on port ${PORT}`);
   } else {
-    console.log(`⚠️  React frontend build not found at: ${buildPath}`);
+    console.error(`❌ Server validation failed - shutting down`);
+    process.exit(1);
   }
 });
