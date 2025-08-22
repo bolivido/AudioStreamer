@@ -80,27 +80,46 @@ console.log(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? 'SE
 console.log(`   CLOUDINARY_URL: ${process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'}`);
 
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-  // Configure Cloudinary
-  cloudinary.config({
-    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET
-  });
-  
-  // Cloudinary storage
-  const cloudinaryStorage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    params: {
-      folder: 'audio-streamer',
-      resource_type: 'auto',
-      allowed_formats: ['mp3', 'wav', 'aac', 'ogg', 'flac'],
-      transformation: [{ quality: 'auto' }]
-    }
-  });
-  storage = cloudinaryStorage;
-  useCloudStorage = true;
-  console.log(`☁️  Using Cloudinary cloud storage`);
-  console.log(`   Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+  try {
+    // Configure Cloudinary
+    cloudinary.config({
+      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+      api_key: process.env.CLOUDINARY_API_KEY,
+      api_secret: process.env.CLOUDINARY_API_SECRET
+    });
+    
+    console.log(`☁️  Cloudinary configured successfully`);
+    
+    // Cloudinary storage
+    const cloudinaryStorage = new CloudinaryStorage({
+      cloudinary: cloudinary,
+      params: {
+        folder: 'audio-streamer',
+        resource_type: 'auto',
+        allowed_formats: ['mp3', 'wav', 'aac', 'ogg', 'flac'],
+        transformation: [{ quality: 'auto' }]
+      }
+    });
+    storage = cloudinaryStorage;
+    useCloudStorage = true;
+    console.log(`☁️  Using Cloudinary cloud storage`);
+    console.log(`   Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+  } catch (error) {
+    console.error(`❌ Cloudinary configuration error:`, error);
+    // Fallback to local storage
+    storage = multer.diskStorage({
+      destination: (req, file, cb) => {
+        cb(null, UPLOAD_DIR);
+      },
+      filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+      }
+    });
+    useCloudStorage = false;
+    console.log(`📁 Falling back to local storage due to Cloudinary error`);
+  }
 } else {
   // Local storage
   storage = multer.diskStorage({
