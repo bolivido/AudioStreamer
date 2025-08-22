@@ -185,6 +185,27 @@ const upload = multer({
   }
 }).single('audio');
 
+// Add error handling for multer
+const uploadMiddleware = (req, res, next) => {
+  upload(req, res, (err) => {
+    if (err instanceof multer.MulterError) {
+      console.error('Multer error:', err);
+      return res.status(400).json({ 
+        error: 'File upload error', 
+        details: err.message,
+        code: err.code 
+      });
+    } else if (err) {
+      console.error('Upload error:', err);
+      return res.status(500).json({ 
+        error: 'Upload failed', 
+        details: err.message 
+      });
+    }
+    next();
+  });
+};
+
 // Error handling middleware for multer
 app.use((error, req, res, next) => {
   if (error instanceof multer.MulterError) {
@@ -277,7 +298,7 @@ app.get('/api/storage', async (req, res) => {
 });
 
 // Upload audio file
-app.post('/api/upload', uploadLimiter, upload, async (req, res) => {
+app.post('/api/upload', uploadLimiter, uploadMiddleware, async (req, res) => {
   try {
     console.log(`📤 Upload request received`);
     console.log(`📁 Request body:`, req.body);
