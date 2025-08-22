@@ -110,6 +110,9 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
                 serverUrl: serverUrl
               };
               
+              console.log(`🎵 Created audio data:`, audioData);
+              console.log(`🎵 Stream URL: ${audioData.url}`);
+              
               onAudioSelect(audioData);
               setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
               autoPlaySong(audioData); // Auto-play the song

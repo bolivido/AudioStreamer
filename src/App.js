@@ -63,6 +63,12 @@ function App() {
     setTimeout(() => {
       setIsPlaying(true);
       setConnectionStatus('connected');
+      
+      // Force the RadioPlayer to start playing
+      if (audio.url) {
+        console.log(`🎵 Starting playback of: ${audio.url}`);
+        // The RadioPlayer will automatically start playing when streamUrl changes and isPlaying is true
+      }
     }, config.autoPlay.delay);
   };
 
@@ -164,6 +170,21 @@ function App() {
               audioMode={audioMode}
               currentAudio={currentAudio}
             />
+          )}
+
+          {/* Audio Status Debug */}
+          {currentAudio && (
+            <div className="mt-4 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg">
+              <h3 className="text-lg font-semibold text-blue-300 mb-2">🎵 Current Audio</h3>
+              <div className="text-sm text-blue-200 space-y-1">
+                <p><strong>Name:</strong> {currentAudio.name}</p>
+                <p><strong>URL:</strong> {currentAudio.url}</p>
+                <p><strong>Mode:</strong> {audioMode}</p>
+                <p><strong>Playing:</strong> {isPlaying ? '✅ Yes' : '❌ No'}</p>
+                <p><strong>Status:</strong> {connectionStatus}</p>
+                <p><strong>Stream URL:</strong> {streamUrl}</p>
+              </div>
+            </div>
           )}
 
                   {/* Status Display */}

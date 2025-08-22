@@ -31,6 +31,15 @@ const RadioPlayer = ({
     }
   }, [volume]);
 
+  // Auto-play when isPlaying becomes true and we have a streamUrl
+  useEffect(() => {
+    if (isPlaying && streamUrl && audioRef.current) {
+      console.log(`🎵 Auto-play triggered for: ${streamUrl}`);
+      handlePlay();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isPlaying, streamUrl]);
+
   // Monitor network status
   useEffect(() => {
     const handleOnline = () => setNetworkStatus('online');
@@ -58,6 +67,7 @@ const RadioPlayer = ({
 
   const handlePlay = async () => {
     try {
+      console.log(`🎵 handlePlay called with streamUrl: ${streamUrl}`);
       setIsLoading(true);
       setError(null);
       onConnectionStatusChange('connecting');
@@ -67,17 +77,21 @@ const RadioPlayer = ({
         audioRef.current.src = streamUrl;
         audioRef.current.crossOrigin = 'anonymous';
         
+        console.log(`🎵 Audio element src set to: ${streamUrl}`);
+        
         // Wait for audio to be ready
         await new Promise((resolve, reject) => {
           const audio = audioRef.current;
           
           const onCanPlay = () => {
+            console.log(`🎵 Audio can play - starting playback`);
             audio.removeEventListener('canplay', onCanPlay);
             audio.removeEventListener('error', onError);
             resolve();
           };
           
           const onError = (e) => {
+            console.error(`🎵 Audio error event:`, e);
             audio.removeEventListener('canplay', onCanPlay);
             audio.removeEventListener('error', onError);
             reject(new Error('Audio failed to load'));
@@ -88,6 +102,7 @@ const RadioPlayer = ({
           
           // Set a timeout for loading
           setTimeout(() => {
+            console.log(`🎵 Audio loading timeout reached`);
             audio.removeEventListener('canplay', onCanPlay);
             audio.removeEventListener('error', onError);
             reject(new Error('Audio loading timeout'));
@@ -95,7 +110,9 @@ const RadioPlayer = ({
         });
         
         // Try to play
+        console.log(`🎵 Attempting to play audio`);
         await audioRef.current.play();
+        console.log(`🎵 Audio playback started successfully`);
         onPlayStateChange(true);
         onConnectionStatusChange('connected');
         startMetadataPolling();
