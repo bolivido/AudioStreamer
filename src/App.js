@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import RadioPlayer from './components/RadioPlayer';
 import StreamConfig from './components/StreamConfig';
 import AudioUploader from './components/AudioUploader';
@@ -17,6 +17,44 @@ function App() {
 
   // Working radio stream URLs - optimized for reliability
   const defaultStreams = config.defaultStreams;
+
+  // Auto-load songs from server when page loads
+  useEffect(() => {
+    const loadServerSongs = async () => {
+      try {
+        console.log('🎵 Loading songs from server...');
+        const response = await fetch(`${serverUrl}/api/audio`);
+        if (response.ok) {
+          const serverAudios = await response.json();
+          console.log(`🎵 Found ${serverAudios.length} songs on server`);
+          
+          if (serverAudios.length > 0) {
+            // Convert server audio format to match our local format
+            const formattedAudios = serverAudios.map(audio => ({
+              id: audio.name,
+              name: audio.name,
+              url: `${serverUrl}/api/stream/${audio.name}`,
+              type: audio.mimetype || 'audio/mpeg',
+              size: audio.size || 0,
+              duration: audio.duration || 0
+            }));
+            
+            setUploadedAudios(formattedAudios);
+            
+            // Auto-play the first song if auto-play is enabled
+            if (config.autoPlay.enabled && formattedAudios.length > 0) {
+              console.log('🎵 Auto-playing first song from server');
+              handleAutoPlay(formattedAudios[0]);
+            }
+          }
+        }
+      } catch (error) {
+        console.log('🎵 No songs found on server or server not accessible');
+      }
+    };
+
+    loadServerSongs();
+  }, [serverUrl]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
   const handlePlayStateChange = (playing) => {
