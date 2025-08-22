@@ -19,7 +19,7 @@ function App() {
   // Working radio stream URLs - optimized for reliability
   const defaultStreams = config.defaultStreams;
 
-  // Auto-load songs from server when page loads
+  // Auto-load songs from server when page loads - FIXED VERSION
   useEffect(() => {
     const loadServerSongs = async () => {
       try {
