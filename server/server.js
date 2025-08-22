@@ -6,6 +6,8 @@ const fs = require('fs-extra');
 const mime = require('mime-types');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
+const cloudinary = require('cloudinary').v2;
+const { CloudinaryStorage } = require('multer-storage-cloudinary');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -66,6 +68,39 @@ const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg', 'audio/flac'];
 
+// Configure storage based on environment
+let storage;
+let useCloudStorage = false;
+
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  // Cloudinary storage
+  const cloudinaryStorage = new CloudinaryStorage({
+    cloudinary: cloudinary,
+    params: {
+      folder: 'audio-streamer',
+      resource_type: 'auto',
+      allowed_formats: ['mp3', 'wav', 'aac', 'ogg', 'flac'],
+      transformation: [{ quality: 'auto' }]
+    }
+  });
+  storage = cloudinaryStorage;
+  useCloudStorage = true;
+  console.log(`☁️  Using Cloudinary cloud storage`);
+} else {
+  // Local storage
+  storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, UPLOAD_DIR);
+    },
+    filename: (req, file, cb) => {
+      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const ext = path.extname(file.originalname);
+      cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+    }
+  });
+  console.log(`📁 Using local storage`);
+}
+
 // Ensure upload directory exists and log its location
 try {
   fs.ensureDirSync(UPLOAD_DIR);
@@ -85,9 +120,13 @@ try {
     console.log(`📋 Files: ${currentFiles.join(', ')}`);
   } else {
     console.log(`⚠️  WARNING: Upload directory is empty!`);
-    console.log(`⚠️  This is normal for Railway's ephemeral storage.`);
-    console.log(`⚠️  Files will be lost when container restarts.`);
-    console.log(`💡 Consider using Railway volumes for persistent storage.`);
+    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+      console.log(`☁️  Files will be stored in Cloudinary cloud storage`);
+    } else {
+      console.log(`⚠️  This is normal for Railway's ephemeral storage.`);
+      console.log(`⚠️  Files will be lost when container restarts.`);
+      console.log(`💡 Consider using Cloudinary for persistent storage.`);
+    }
   }
 } catch (error) {
   console.error(`❌ Error setting up upload directory: ${error.message}`);
@@ -95,17 +134,6 @@ try {
 }
 
 // Configure multer for file uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-  }
-});
-
 const upload = multer({
   storage: storage,
   limits: {
@@ -175,37 +203,59 @@ app.post('/api/upload', uploadLimiter, upload.single('audio'), async (req, res) 
       originalName: req.file.originalname,
       size: req.file.size,
       mimetype: req.file.mimetype,
-      path: req.file.path
+      path: req.file.path,
+      url: req.file.url
     });
 
-    // Verify file was actually saved
-    if (fs.existsSync(req.file.path)) {
-      console.log(`✅ File successfully saved to: ${req.file.path}`);
-      const fileStats = fs.statSync(req.file.path);
-      console.log(`📊 File stats:`, fileStats);
+    // Handle different storage types
+    let fileInfo;
+    if (useCloudStorage && req.file.url) {
+      // Cloudinary storage
+      fileInfo = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        sizeFormatted: formatBytes(req.file.size),
+        mimetype: req.file.mimetype,
+        uploadDate: new Date(),
+        url: req.file.url,
+        cloudStorage: true
+      };
+      console.log(`☁️  File uploaded to Cloudinary: ${req.file.url}`);
     } else {
-      console.log(`❌ File not found at expected path: ${req.file.path}`);
-    }
+      // Local storage
+      // Verify file was actually saved
+      if (fs.existsSync(req.file.path)) {
+        console.log(`✅ File successfully saved to: ${req.file.path}`);
+        const fileStats = fs.statSync(req.file.path);
+        console.log(`📊 File stats:`, fileStats);
+      } else {
+        console.log(`❌ File not found at expected path: ${req.file.path}`);
+      }
 
-    const fileInfo = {
-      filename: req.file.filename,
-      originalName: req.file.originalname,
-      size: req.file.size,
-      sizeFormatted: formatBytes(req.file.size),
-      mimetype: req.file.mimetype,
-      uploadDate: new Date(),
-      path: req.file.path
-    };
+      fileInfo = {
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        size: req.file.size,
+        sizeFormatted: formatBytes(req.file.size),
+        mimetype: req.file.mimetype,
+        uploadDate: new Date(),
+        path: req.file.path,
+        cloudStorage: false
+      };
+    }
 
     console.log('File uploaded:', fileInfo);
     
-    // List all files in upload directory after upload
-    try {
-      const allFiles = fs.readdirSync(UPLOAD_DIR);
-      console.log(`📦 Total files in upload directory: ${allFiles.length}`);
-      console.log(`📋 Files: ${allFiles.join(', ')}`);
-    } catch (listError) {
-      console.log(`⚠️  Could not list upload directory: ${listError.message}`);
+    // List all files in upload directory after upload (for local storage)
+    if (!useCloudStorage) {
+      try {
+        const allFiles = fs.readdirSync(UPLOAD_DIR);
+        console.log(`📦 Total files in upload directory: ${allFiles.length}`);
+        console.log(`📋 Files: ${allFiles.join(', ')}`);
+      } catch (listError) {
+        console.log(`⚠️  Could not list upload directory: ${listError.message}`);
+      }
     }
     
     res.json({
