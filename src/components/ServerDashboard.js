@@ -178,16 +178,35 @@ const ServerDashboard = ({ serverUrl = config.serverUrl }) => {
         </div>
       </div>
 
-      {/* Audio Files List */}
-      <div className="card">
-        <h2 className="text-xl font-semibold text-white mb-4 text-center">
+      {/* Server Audio Library */}
+      <div className="card mb-6">
+        <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
           🎵 Server Audio Library ({audioFiles.length})
         </h2>
         
         {audioFiles.length === 0 ? (
-          <div className="text-center text-gray-400 py-8">
-            <p>No audio files uploaded yet.</p>
-            <p className="text-sm mt-1">Upload files to see them here.</p>
+          <div className="text-center py-8">
+            <div className="text-6xl mb-4">🎵</div>
+            <p className="text-gray-400 mb-4">No audio files uploaded yet.</p>
+            <p className="text-gray-400 mb-6">Upload files to see them here.</p>
+            
+            {/* Railway Storage Notice */}
+            <div className="bg-yellow-900/30 border border-yellow-500/50 rounded-lg p-4 mb-4">
+              <h3 className="text-yellow-300 font-semibold mb-2">⚠️ Railway Storage Notice</h3>
+              <p className="text-yellow-200 text-sm mb-2">
+                Railway's free tier uses ephemeral storage. Files may disappear when the container restarts.
+              </p>
+              <p className="text-yellow-200 text-sm">
+                For persistent storage, consider upgrading to Railway Pro or using cloud storage.
+              </p>
+            </div>
+            
+            <button
+              onClick={() => window.location.href = '/#upload'}
+              className="btn-primary"
+            >
+              🎵 Upload Audio Files
+            </button>
           </div>
         ) : (
           <div className="space-y-3 max-h-96 overflow-y-auto">

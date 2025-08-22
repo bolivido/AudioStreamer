@@ -77,6 +77,11 @@ try {
   console.log(`📦 Current upload directory contents: ${currentFiles.length} files`);
   if (currentFiles.length > 0) {
     console.log(`📋 Files: ${currentFiles.join(', ')}`);
+  } else {
+    console.log(`⚠️  WARNING: Upload directory is empty!`);
+    console.log(`⚠️  This is normal for Railway's ephemeral storage.`);
+    console.log(`⚠️  Files will be lost when container restarts.`);
+    console.log(`💡 Consider using Railway volumes for persistent storage.`);
   }
 } catch (error) {
   console.error(`❌ Error setting up upload directory: ${error.message}`);
