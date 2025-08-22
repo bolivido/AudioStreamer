@@ -256,7 +256,18 @@ const RadioPlayer = ({
 
   // Safety check: if we're in upload mode but currentAudio is incomplete, fall back to stream mode
   const safeAudioMode = audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) ? 'stream' : audioMode;
-  const safeCurrentAudio = safeAudioMode === 'upload' ? currentAudio : null;
+  const safeCurrentAudio = safeAudioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size ? currentAudio : null;
+  
+  // Debug logging to help identify the issue
+  if (audioMode === 'upload' && currentAudio) {
+    console.log('🔍 RadioPlayer Debug:', {
+      currentAudio,
+      hasType: !!currentAudio.type,
+      hasSize: !!currentAudio.size,
+      safeAudioMode,
+      safeCurrentAudio: !!safeCurrentAudio
+    });
+  }
 
   return (
     <div className="card">
@@ -268,9 +279,9 @@ const RadioPlayer = ({
         <p className="text-lg text-gray-300">
           {nowPlaying}
         </p>
-        {safeAudioMode === 'upload' && safeCurrentAudio && (
+        {safeAudioMode === 'upload' && safeCurrentAudio && safeCurrentAudio.type && (
           <div className="text-sm text-gray-400 mt-1 space-y-1">
-            <p>{safeCurrentAudio.type.split('/')[1]?.toUpperCase() || 'AUDIO'} • {Math.round(safeCurrentAudio.size / 1024)} KB</p>
+            <p>{(safeCurrentAudio.type && safeCurrentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {safeCurrentAudio.size ? Math.round(safeCurrentAudio.size / 1024) : 0} KB</p>
             {safeCurrentAudio.duration && safeCurrentAudio.duration > 0 && (
               <p>Duration: {Math.floor(safeCurrentAudio.duration / 60)}:{Math.floor(safeCurrentAudio.duration % 60).toString().padStart(2, '0')}</p>
             )}
