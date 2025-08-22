@@ -214,6 +214,30 @@ app.get('/api/env-check', (req, res) => {
   });
 });
 
+// Test Cloudinary connectivity
+app.get('/api/test-cloudinary', async (req, res) => {
+  try {
+    if (!useCloudStorage) {
+      return res.json({ error: 'Cloudinary not enabled' });
+    }
+    
+    // Test basic Cloudinary connectivity
+    const result = await cloudinary.api.ping();
+    res.json({ 
+      success: true, 
+      message: 'Cloudinary connection successful',
+      result: result
+    });
+  } catch (error) {
+    console.error('Cloudinary test error:', error);
+    res.json({ 
+      success: false, 
+      error: error.message,
+      details: error
+    });
+  }
+});
+
 // Get server storage information
 app.get('/api/storage', async (req, res) => {
   try {
@@ -258,6 +282,7 @@ app.post('/api/upload', uploadLimiter, upload, async (req, res) => {
     console.log(`📤 Upload request received`);
     console.log(`📁 Request body:`, req.body);
     console.log(`📁 Request file:`, req.file);
+    console.log(`☁️  Cloudinary status:`, useCloudStorage ? 'ENABLED' : 'DISABLED');
     
     if (!req.file) {
       console.log(`❌ No file in request`);
