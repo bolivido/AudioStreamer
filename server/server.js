@@ -394,6 +394,9 @@ const startServer = () => {
         console.log(`🔧 Server running in API-only mode`);
       }
       console.log(`🚀 Audio Streamer Server ready on port ${PORT}`);
+      
+      // Start keep-alive mechanism
+      startKeepAlive();
     });
     
     // Handle server errors
@@ -426,6 +429,36 @@ const startServer = () => {
     console.error(`❌ Server startup failed: ${error.message}`);
     process.exit(1);
   }
+};
+
+// Keep-alive mechanism to prevent Railway from killing the container
+const startKeepAlive = () => {
+  console.log(`💓 Starting keep-alive mechanism...`);
+  
+  // Send periodic health checks
+  setInterval(() => {
+    try {
+      const healthStatus = {
+        status: 'OK',
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime(),
+        memory: process.memoryUsage(),
+        uploadDir: UPLOAD_DIR,
+        uploadDirExists: fs.existsSync(UPLOAD_DIR),
+        hasBuildFiles: hasBuildFiles,
+        port: PORT
+      };
+      console.log(`💓 Keep-alive: Server running for ${Math.floor(process.uptime())}s`);
+    } catch (error) {
+      console.log(`⚠️  Keep-alive error: ${error.message}`);
+    }
+  }, 30000); // Every 30 seconds
+  
+  // Log memory usage periodically
+  setInterval(() => {
+    const memUsage = process.memoryUsage();
+    console.log(`📊 Memory usage: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB / ${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`);
+  }, 60000); // Every minute
 };
 
 // Health check endpoint
@@ -522,5 +555,35 @@ app.get('*', (req, res) => {
     });
   }
 });
+
+// Process monitoring and error handling
+process.on('uncaughtException', (error) => {
+  console.error(`❌ Uncaught Exception: ${error.message}`);
+  console.error(`📚 Stack trace: ${error.stack}`);
+  process.exit(1);
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error(`❌ Unhandled Rejection at: ${promise}`);
+  console.error(`📚 Reason: ${reason}`);
+  process.exit(1);
+});
+
+process.on('warning', (warning) => {
+  console.warn(`⚠️  Process warning: ${warning.name}`);
+  console.warn(`📚 Message: ${warning.message}`);
+  console.warn(`📚 Stack: ${warning.stack}`);
+});
+
+// Monitor system resources
+setInterval(() => {
+  const memUsage = process.memoryUsage();
+  const cpuUsage = process.cpuUsage();
+  
+  console.log(`📊 System Status:`);
+  console.log(`   Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB used / ${Math.round(memUsage.heapTotal / 1024 / 1024)}MB total`);
+  console.log(`   CPU: ${Math.round(cpuUsage.user / 1000)}ms user / ${Math.round(cpuUsage.system / 1000)}ms system`);
+  console.log(`   Uptime: ${Math.floor(process.uptime())}s`);
+}, 120000); // Every 2 minutes
 
 startServer();

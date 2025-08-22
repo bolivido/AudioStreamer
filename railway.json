@@ -16,5 +16,9 @@
       "mountPath": "/app/server/uploads",
       "size": "1GB"
     }
-  ]
+  ],
+  "railway": {
+    "buildCommand": "echo 'No build needed'",
+    "startCommand": "cd server && npm start"
+  }
 }
