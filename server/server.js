@@ -28,6 +28,7 @@ if (fs.existsSync(buildPath)) {
     if (buildFiles.length > 0) {
       console.log(`📁 Serving React build from: ${buildPath}`);
       console.log(`📦 Build contains ${buildFiles.length} files/directories`);
+      console.log(`📋 Build files: ${buildFiles.join(', ')}`);
       app.use(express.static(buildPath));
       hasBuildFiles = true;
     } else {
@@ -39,7 +40,12 @@ if (fs.existsSync(buildPath)) {
 } else {
   console.log(`⚠️  React build not found at: ${buildPath}`);
   console.log(`📂 Current directory: ${__dirname}`);
-  console.log(`📂 Parent directory contents: ${fs.readdirSync(__dirname).join(', ')}`);
+  try {
+    const currentFiles = fs.readdirSync(__dirname);
+    console.log(`📂 Current directory contents: ${currentFiles.join(', ')}`);
+  } catch (error) {
+    console.log(`⚠️  Could not read current directory: ${error.message}`);
+  }
 }
 
 // Rate limiting for uploads

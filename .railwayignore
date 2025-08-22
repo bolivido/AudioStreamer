@@ -10,10 +10,17 @@ node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-build/
+# build/  # Commented out to allow pre-built files
 coverage/
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.cache/
+.parcel-cache/
+.next/
+.nuxt/
+dist/
+tmp/
+temp/
