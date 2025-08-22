@@ -6,15 +6,15 @@ const fs = require('fs-extra');
 const mime = require('mime-types');
 const rateLimit = require('express-rate-limit');
 const helmet = require('helmet');
-const cloudinary = require('cloudinary').v2;
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
+const AWS = require('aws-sdk');
+const multerS3 = require('multer-s3');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Railway-specific configuration
 const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
-console.log(`🚂 Railway environment detected: ${isRailway ? 'YES' : 'NO'} - Cloudinary Ready!`);
+console.log(`🚂 Railway environment detected: ${isRailway ? 'YES' : 'NO'} - AWS S3 Ready!`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🔧 Port: ${PORT}`);
 
@@ -72,57 +72,44 @@ const ALLOWED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg', 'aud
 let storage;
 let useCloudStorage = false;
 
-// Debug Cloudinary environment variables
-console.log(`🔍 Cloudinary Environment Check:`);
-console.log(`   CLOUDINARY_CLOUD_NAME: ${process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET'}`);
-console.log(`   CLOUDINARY_API_KEY: ${process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET'}`);
-console.log(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'}`);
-console.log(`   CLOUDINARY_URL: ${process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'}`);
+// Debug AWS S3 environment variables
+console.log(`🔍 AWS S3 Environment Check:`);
+console.log(`   AWS_ACCESS_KEY_ID: ${process.env.AWS_ACCESS_KEY_ID ? 'SET' : 'NOT SET'}`);
+console.log(`   AWS_SECRET_ACCESS_KEY: ${process.env.AWS_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET'}`);
+console.log(`   AWS_REGION: ${process.env.AWS_REGION ? 'SET' : 'NOT SET'}`);
+console.log(`   AWS_S3_BUCKET: ${process.env.AWS_S3_BUCKET ? 'SET' : 'NOT SET'}`);
 
-// Use local storage for now to ensure uploads work
-console.log(`🔧 Using local storage to ensure upload functionality`);
-storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, UPLOAD_DIR);
-  },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    const ext = path.extname(file.originalname);
-    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
-  }
-});
-useCloudStorage = false;
-console.log(`📁 Local storage configured successfully`);
-
-// TODO: Fix Cloudinary configuration
-/*
-if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+// Configure storage based on environment
+if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_REGION && process.env.AWS_S3_BUCKET) {
   try {
-    // Configure Cloudinary
-    cloudinary.config({
-      cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-      api_key: process.env.CLOUDINARY_API_KEY,
-      api_secret: process.env.CLOUDINARY_API_SECRET
+    // Configure AWS S3
+    const s3 = new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION
     });
     
-    console.log(`☁️  Cloudinary configured successfully`);
+    console.log(`☁️  AWS S3 configured successfully`);
     
-    // Cloudinary storage
-    const cloudinaryStorage = new CloudinaryStorage({
-      cloudinary: cloudinary,
-      params: {
-        folder: 'audio-streamer',
-        resource_type: 'auto',
-        allowed_formats: ['mp3', 'wav', 'aac', 'ogg', 'flac'],
-        transformation: [{ quality: 'auto' }]
+    // S3 storage
+    storage = multerS3({
+      s3: s3,
+      bucket: process.env.AWS_S3_BUCKET,
+      key: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        const ext = path.extname(file.originalname);
+        cb(null, `audio-streamer/${file.fieldname}-${uniqueSuffix}${ext}`);
+      },
+      contentType: (req, file, cb) => {
+        cb(null, file.mimetype);
       }
     });
-    storage = cloudinaryStorage;
     useCloudStorage = true;
-    console.log(`☁️  Using Cloudinary cloud storage`);
-    console.log(`   Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
+    console.log(`☁️  Using AWS S3 cloud storage`);
+    console.log(`   Bucket: ${process.env.AWS_S3_BUCKET}`);
+    console.log(`   Region: ${process.env.AWS_REGION}`);
   } catch (error) {
-    console.error(`❌ Cloudinary configuration error:`, error);
+    console.error(`❌ AWS S3 configuration error:`, error);
     // Fallback to local storage
     storage = multer.diskStorage({
       destination: (req, file, cb) => {
@@ -135,7 +122,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
       }
     });
     useCloudStorage = false;
-    console.log(`📁 Falling back to local storage due to Cloudinary error`);
+    console.log(`📁 Falling back to local storage due to S3 error`);
   }
 } else {
   // Local storage
@@ -152,7 +139,6 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   useCloudStorage = false;
   console.log(`📁 Using local storage`);
 }
-*/
 
 // Ensure upload directory exists and log its location
 try {
@@ -173,12 +159,12 @@ try {
     console.log(`📋 Files: ${currentFiles.join(', ')}`);
   } else {
     console.log(`⚠️  WARNING: Upload directory is empty!`);
-    if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
-      console.log(`☁️  Files will be stored in Cloudinary cloud storage`);
+    if (process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY && process.env.AWS_REGION && process.env.AWS_S3_BUCKET) {
+      console.log(`☁️  Files will be stored in AWS S3 cloud storage`);
     } else {
       console.log(`⚠️  This is normal for Railway's ephemeral storage.`);
       console.log(`⚠️  Files will be lost when container restarts.`);
-      console.log(`💡 Consider using Cloudinary for persistent storage.`);
+      console.log(`💡 Consider using AWS S3 for persistent storage.`);
     }
   }
 } catch (error) {
@@ -243,33 +229,39 @@ app.use((error, req, res, next) => {
 // Check environment variables
 app.get('/api/env-check', (req, res) => {
   res.json({
-    cloudinary: {
-      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET',
-      apiKey: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
-      apiSecret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET',
-      url: process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'
+    aws: {
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID ? 'SET' : 'NOT SET',
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY ? 'SET' : 'NOT SET',
+      region: process.env.AWS_REGION ? 'SET' : 'NOT SET',
+      bucket: process.env.AWS_S3_BUCKET ? 'SET' : 'NOT SET'
     },
     useCloudStorage: useCloudStorage,
     timestamp: new Date().toISOString()
   });
 });
 
-// Test Cloudinary connectivity
-app.get('/api/test-cloudinary', async (req, res) => {
+// Test AWS S3 connectivity
+app.get('/api/test-s3', async (req, res) => {
   try {
     if (!useCloudStorage) {
-      return res.json({ error: 'Cloudinary not enabled' });
+      return res.json({ error: 'S3 not enabled' });
     }
     
-    // Test basic Cloudinary connectivity
-    const result = await cloudinary.api.ping();
+    // Test basic S3 connectivity
+    const s3 = new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION
+    });
+    
+    const result = await s3.listBuckets().promise();
     res.json({ 
       success: true, 
-      message: 'Cloudinary connection successful',
+      message: 'S3 connection successful',
       result: result
     });
   } catch (error) {
-    console.error('Cloudinary test error:', error);
+    console.error('S3 test error:', error);
     res.json({ 
       success: false, 
       error: error.message,
@@ -322,7 +314,7 @@ app.post('/api/upload', uploadLimiter, uploadMiddleware, async (req, res) => {
     console.log(`📤 Upload request received`);
     console.log(`📁 Request body:`, req.body);
     console.log(`📁 Request file:`, req.file);
-    console.log(`☁️  Cloudinary status:`, useCloudStorage ? 'ENABLED' : 'DISABLED');
+    console.log(`☁️  S3 status:`, useCloudStorage ? 'ENABLED' : 'DISABLED');
     
     if (!req.file) {
       console.log(`❌ No file in request`);
