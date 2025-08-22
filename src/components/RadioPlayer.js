@@ -23,35 +23,10 @@ const RadioPlayer = ({
   const [metadata, setMetadata] = useState({});
   const [networkStatus, setNetworkStatus] = useState('online');
 
-  // 🛡️ SAFETY CHECK AFTER ALL HOOKS
-  if (!audioMode || (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size))) {
-    console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback');
-    return (
-      <div className="card">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold text-white mb-2">Radio Player</h2>
-          <p className="text-lg text-gray-300">Stream Mode (Safe Fallback)</p>
-        </div>
-        
-        <div className="flex flex-col items-center space-y-6">
-          <button
-            onClick={() => console.log('Fallback play clicked')}
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800 bg-primary-600 hover:bg-primary-700 text-white"
-          >
-            ▶️
-          </button>
-          
-          <div className="text-center">
-            <p className="text-xs text-gray-500 mb-1">Stream Source</p>
-            <p className="text-sm text-gray-400 font-mono break-all max-w-xs">
-              {streamUrl || 'No stream selected'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  const MAX_RECONNECT_ATTEMPTS = 5;
+  const RECONNECT_DELAY = 3000; // 3 seconds
 
+  // 🚨 ALL useEffect HOOKS MUST BE CALLED FIRST TOO
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
@@ -94,6 +69,35 @@ const RadioPlayer = ({
       }
     };
   }, []);
+
+  // 🛡️ SAFETY CHECK AFTER ALL HOOKS
+  if (!audioMode || (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size))) {
+    console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback');
+    return (
+      <div className="card">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-white mb-2">Radio Player</h2>
+          <p className="text-lg text-gray-300">Stream Mode (Safe Fallback)</p>
+        </div>
+        
+        <div className="flex flex-col items-center space-y-6">
+          <button
+            onClick={() => console.log('Fallback play clicked')}
+            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800 bg-primary-600 hover:bg-primary-700 text-white"
+          >
+            ▶️
+          </button>
+          
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">Stream Source</p>
+            <p className="text-sm text-gray-400 font-mono break-all max-w-xs">
+              {streamUrl || 'No stream selected'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   const handlePlay = async () => {
     if (!streamUrl || !audioRef.current) {
