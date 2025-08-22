@@ -14,6 +14,7 @@ function App() {
   const [currentAudio, setCurrentAudio] = useState(null);
   const [audioMode, setAudioMode] = useState('stream'); // 'stream', 'upload', or 'server'
   const [serverUrl] = useState(config.serverUrl);
+  const [isLoadingSongs, setIsLoadingSongs] = useState(true);
 
   // Working radio stream URLs - optimized for reliability
   const defaultStreams = config.defaultStreams;
@@ -23,6 +24,7 @@ function App() {
     const loadServerSongs = async () => {
       try {
         console.log('🎵 Loading songs from server...');
+        setIsLoadingSongs(true);
         const response = await fetch(`${serverUrl}/api/audio`);
         if (response.ok) {
           const serverAudios = await response.json();
@@ -50,6 +52,8 @@ function App() {
         }
       } catch (error) {
         console.log('🎵 No songs found on server or server not accessible');
+      } finally {
+        setIsLoadingSongs(false);
       }
     };
 
@@ -181,13 +185,25 @@ function App() {
 
           {/* Audio Uploader */}
           {audioMode === 'upload' && (
-            <AudioUploader
-              onAudioSelect={handleAudioSelect}
-              onAudioRemove={handleAudioRemove}
-              uploadedAudios={uploadedAudios}
-              serverUrl={serverUrl}
-              onAutoPlay={handleAutoPlay}
-            />
+            <>
+              {/* Loading Indicator */}
+              {isLoadingSongs && (
+                <div className="mb-4 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg text-center">
+                  <div className="inline-flex items-center space-x-2">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400"></div>
+                    <span className="text-blue-300">Loading songs from server...</span>
+                  </div>
+                </div>
+              )}
+              
+              <AudioUploader
+                onAudioSelect={handleAudioSelect}
+                onAudioRemove={handleAudioRemove}
+                uploadedAudios={uploadedAudios}
+                serverUrl={serverUrl}
+                onAutoPlay={handleAutoPlay}
+              />
+            </>
           )}
 
           {/* Server Dashboard */}
