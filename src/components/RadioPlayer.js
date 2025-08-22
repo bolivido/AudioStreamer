@@ -321,30 +321,32 @@ const RadioPlayer = ({
 
 
 
-  return (
-    <div className="card">
-      {/* Now Playing Display */}
-      <div className="text-center mb-6">
-        <h2 className="text-2xl font-semibold text-white mb-2">
-          {isPlaying ? 'Now Playing' : audioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
-        </h2>
-        <p className="text-lg text-gray-300">
-          {nowPlaying}
-        </p>
-        {audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && (
-          <div className="text-sm text-gray-400 mt-1 space-y-1">
-            <p>{(currentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(currentAudio.size / 1024)} KB</p>
-            {currentAudio.duration && currentAudio.duration > 0 && (
-              <p>Duration: {Math.floor(currentAudio.duration / 60)}:{Math.floor(currentAudio.duration % 60).toString().padStart(2, '0')}</p>
-            )}
-          </div>
-        )}
-        {audioMode === 'stream' && metadata.artist && (
-          <p className="text-sm text-gray-400 mt-1">
-            {metadata.artist} • {metadata.album}
+  // 🛡️ FINAL SAFETY: Wrap the render in try-catch to prevent any unexpected crashes
+  try {
+    return (
+      <div className="card">
+        {/* Now Playing Display */}
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-white mb-2">
+            {isPlaying ? 'Now Playing' : audioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
+          </h2>
+          <p className="text-lg text-gray-300">
+            {nowPlaying}
           </p>
-        )}
-      </div>
+          {audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && (
+            <div className="text-sm text-gray-400 mt-1 space-y-1">
+              <p>{(currentAudio.type && currentAudio.type.split && currentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(currentAudio.size / 1024)} KB</p>
+              {currentAudio.duration && currentAudio.duration > 0 && (
+                <p>Duration: {Math.floor(currentAudio.duration / 60)}:{Math.floor(currentAudio.duration % 60).toString().padStart(2, '0')}</p>
+              )}
+            </div>
+          )}
+          {audioMode === 'stream' && metadata.artist && (
+            <p className="text-sm text-gray-400 mt-1">
+              {metadata.artist} • {metadata.album}
+            </p>
+          )}
+        </div>
 
       {/* Audio Element */}
       <audio
@@ -474,7 +476,28 @@ const RadioPlayer = ({
         )}
       </div>
     </div>
-  );
+    );
+  } catch (error) {
+    console.error('🚨 RadioPlayer render error:', error);
+    // Return a safe fallback UI if rendering fails
+    return (
+      <div className="card bg-red-900/20 border-red-500">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-red-300 mb-2">⚠️ Error</h2>
+          <p className="text-lg text-red-200">Something went wrong while rendering the player</p>
+          <p className="text-sm text-red-300 mt-2">
+            Please refresh the page or try again
+          </p>
+        </div>
+        
+        <div className="text-center">
+          <p className="text-sm text-red-400">
+            Error: {error.message}
+          </p>
+        </div>
+      </div>
+    );
+  }
 };
 
 export default RadioPlayer;

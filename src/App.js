@@ -157,7 +157,16 @@ function App() {
           <div className="text-center mb-6">
             <div className="inline-flex bg-gray-800 rounded-lg p-1 border border-gray-700">
               <button
-                onClick={() => setAudioMode('stream')}
+                onClick={() => {
+                  setAudioMode('stream');
+                  // Reset upload-related state when switching to stream mode
+                  if (audioMode === 'upload') {
+                    setCurrentAudio(null);
+                    setStreamUrl('');
+                    setIsPlaying(false);
+                    setConnectionStatus('disconnected');
+                  }
+                }}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   audioMode === 'stream'
                     ? 'bg-primary-600 text-white'
@@ -167,7 +176,16 @@ function App() {
                 🌐 Online Radio
               </button>
               <button
-                onClick={() => setAudioMode('upload')}
+                onClick={() => {
+                  setAudioMode('upload');
+                  // Reset stream-related state when switching to upload mode
+                  if (audioMode === 'stream') {
+                    setStreamUrl('');
+                    setIsPlaying(false);
+                    setConnectionStatus('disconnected');
+                    setNowPlaying('Select an audio file');
+                  }
+                }}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   audioMode === 'upload'
                     ? 'bg-primary-600 text-white'
@@ -177,7 +195,15 @@ function App() {
                 🎵 Upload Audio
               </button>
               <button
-                onClick={() => setAudioMode('server')}
+                onClick={() => {
+                  setAudioMode('server');
+                  // Reset all audio state when switching to server mode
+                  setCurrentAudio(null);
+                  setStreamUrl('');
+                  setIsPlaying(false);
+                  setConnectionStatus('disconnected');
+                  setNowPlaying('Server Management');
+                }}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
                   audioMode === 'server'
                     ? 'bg-primary-600 text-white'
@@ -227,39 +253,30 @@ function App() {
           )}
 
           {/* Radio Player - Only render when we have complete data */}
-          {streamUrl && (
+          {((audioMode === 'stream' && streamUrl) || (audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && streamUrl)) && (
             <>
-              {/* Safety check: Don't render RadioPlayer in upload mode without complete audio data */}
-              {audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) ? (
-                <div className="mt-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-center">
-                  <p className="text-red-300">
-                    ⚠️ Audio data incomplete. Please select a file from the list above.
-                  </p>
-                  <p className="text-xs text-red-400 mt-2">
-                    Debug: audioMode={audioMode}, hasType={!!currentAudio?.type}, hasSize={!!currentAudio?.size}
-                  </p>
-                </div>
-              ) : (
-                <RadioPlayer
-                  streamUrl={streamUrl}
-                  onPlayStateChange={handlePlayStateChange}
-                  onNowPlayingChange={handleNowPlayingChange}
-                  onConnectionStatusChange={handleConnectionStatusChange}
-                  isPlaying={isPlaying}
-                  nowPlaying={nowPlaying}
-                  connectionStatus={connectionStatus}
-                  audioMode={audioMode}
-                  currentAudio={currentAudio}
-                />
-              )}
+              <RadioPlayer
+                streamUrl={streamUrl}
+                onPlayStateChange={handlePlayStateChange}
+                onNowPlayingChange={handleNowPlayingChange}
+                onConnectionStatusChange={handleConnectionStatusChange}
+                isPlaying={isPlaying}
+                nowPlaying={nowPlaying}
+                connectionStatus={connectionStatus}
+                audioMode={audioMode}
+                currentAudio={currentAudio}
+              />
             </>
           )}
 
-          {/* Safety Message for Upload Mode */}
-          {audioMode === 'upload' && !currentAudio && (
+          {/* Safety Message for Upload Mode - Show when in upload mode but no audio selected */}
+          {audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) && (
             <div className="mt-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-center">
               <p className="text-yellow-300">
                 🎵 Select an audio file from the list above to start playing
+              </p>
+              <p className="text-xs text-yellow-400 mt-2">
+                Debug: audioMode={audioMode}, hasType={!!currentAudio?.type}, hasSize={!!currentAudio?.size}
               </p>
             </div>
           )}
@@ -269,15 +286,6 @@ function App() {
             <div className="mt-4 p-4 bg-gray-800/50 border border-gray-700 rounded-lg text-xs text-gray-400">
               <p><strong>Debug:</strong> audioMode={audioMode}, hasCurrentAudio={!!currentAudio}, hasStreamUrl={!!streamUrl}</p>
               <p><strong>Current Audio:</strong> {currentAudio ? `${currentAudio.name} (${currentAudio.type})` : 'None'}</p>
-            </div>
-          )}
-
-          {/* Safety Message for Upload Mode */}
-          {audioMode === 'upload' && !currentAudio && (
-            <div className="mt-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-center">
-              <p className="text-yellow-300">
-                🎵 Select an audio file from the list above to start playing
-              </p>
             </div>
           )}
 
