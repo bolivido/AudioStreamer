@@ -235,6 +235,15 @@ function App() {
             />
           )}
 
+          {/* Safety Message for Upload Mode */}
+          {audioMode === 'upload' && !currentAudio && (
+            <div className="mt-6 p-4 bg-yellow-900/30 border border-yellow-500/50 rounded-lg text-center">
+              <p className="text-yellow-300">
+                🎵 Select an audio file from the list above to start playing
+              </p>
+            </div>
+          )}
+
           {/* Audio Status Debug */}
           {currentAudio && (
             <div className="mt-4 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg">

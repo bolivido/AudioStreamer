@@ -72,12 +72,21 @@ const RadioPlayer = ({
 
   // 🛡️ SAFETY CHECK AFTER ALL HOOKS
   if (!audioMode || (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size))) {
-    console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback');
+    console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback', {
+      audioMode,
+      hasCurrentAudio: !!currentAudio,
+      currentAudioType: currentAudio?.type,
+      currentAudioSize: currentAudio?.size,
+      streamUrl
+    });
     return (
       <div className="card">
         <div className="text-center mb-6">
           <h2 className="text-2xl font-semibold text-white mb-2">Radio Player</h2>
           <p className="text-lg text-gray-300">Stream Mode (Safe Fallback)</p>
+          <p className="text-sm text-gray-400 mt-2">
+            {audioMode === 'upload' ? 'Upload mode - waiting for audio data...' : 'Stream mode active'}
+          </p>
         </div>
         
         <div className="flex flex-col items-center space-y-6">
