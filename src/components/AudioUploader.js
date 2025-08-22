@@ -19,28 +19,41 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
   // Auto-discover songs from music folder
   const discoverMusicFolder = async () => {
     try {
+      console.log(`🔍 Discovering music folder at: ${serverUrl}/api/audio`);
       const response = await fetch(`${serverUrl}/api/audio`);
       if (response.ok) {
         const songs = await response.json();
+        console.log(`🎵 Found ${songs.length} songs on server:`, songs);
+        
         if (songs.length > 0 && !uploadedAudios.length) {
           // Auto-play first song if no songs are currently loaded
           const firstSong = songs[0];
+          console.log(`🎵 Auto-playing first song:`, firstSong);
+          
           const audioData = {
             id: firstSong.id,
             name: firstSong.name,
-            url: firstSong.streamUrl,
+            url: `${serverUrl}${firstSong.streamUrl}`,
             filename: firstSong.filename,
             size: firstSong.size,
             sizeFormatted: firstSong.sizeFormatted,
             uploadDate: firstSong.uploadDate,
             serverUrl: serverUrl
           };
+          
+          console.log(`🎵 Created audio data for auto-play:`, audioData);
           onAudioSelect(audioData);
           autoPlaySong(audioData);
+        } else if (songs.length > 0) {
+          console.log(`🎵 Songs found but already have uploaded audios, not auto-playing`);
+        } else {
+          console.log(`🎵 No songs found on server`);
         }
+      } else {
+        console.log(`❌ Failed to fetch songs: ${response.status}`);
       }
     } catch (error) {
-      console.log('No existing songs found in music folder');
+      console.log('❌ Error discovering music folder:', error);
     }
   };
 
@@ -183,13 +196,22 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
           <p className="text-gray-400 mb-6">
             Drag and drop audio files here, or click to browse
           </p>
-          <button
-            onClick={openFileDialog}
-            disabled={uploading}
-            className="btn-primary"
-          >
-            {uploading ? 'Uploading...' : 'Choose Audio Files'}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={openFileDialog}
+              disabled={uploading}
+              className="btn-primary"
+            >
+              {uploading ? 'Uploading...' : 'Choose Audio Files'}
+            </button>
+            
+            <button
+              onClick={discoverMusicFolder}
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded transition-colors"
+            >
+              🔍 Discover Music on Server
+            </button>
+          </div>
         </div>
         
         {/* Upload Progress */}

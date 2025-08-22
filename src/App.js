@@ -53,7 +53,15 @@ function App() {
   };
 
   const handleAutoPlay = (audio) => {
-    console.log(`🎵 Auto-playing uploaded song: ${audio.name}`);
+    console.log(`🎵 Auto-play triggered for: ${audio.name}`);
+    console.log(`🎵 Audio URL: ${audio.url}`);
+    console.log(`🎵 Current state before auto-play:`, {
+      isPlaying,
+      connectionStatus,
+      streamUrl,
+      audioMode
+    });
+    
     setCurrentAudio(audio);
     setStreamUrl(audio.url);
     setAudioMode('upload');
@@ -61,6 +69,7 @@ function App() {
     
     // Start playing after a short delay
     setTimeout(() => {
+      console.log(`🎵 Setting playback state to true`);
       setIsPlaying(true);
       setConnectionStatus('connected');
       
@@ -175,7 +184,7 @@ function App() {
           {/* Audio Status Debug */}
           {currentAudio && (
             <div className="mt-4 p-4 bg-blue-900/30 border border-blue-500/50 rounded-lg">
-              <h3 className="text-lg font-semibold text-blue-300 mb-2">🎵 Current Audio</h3>
+              <h3 className="text-lg font-semibold text-blue-300 mb-2">�� Current Audio</h3>
               <div className="text-sm text-blue-200 space-y-1">
                 <p><strong>Name:</strong> {currentAudio.name}</p>
                 <p><strong>URL:</strong> {currentAudio.url}</p>
