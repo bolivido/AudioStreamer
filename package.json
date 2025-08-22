@@ -13,6 +13,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build:railway": "react-scripts build && cp -r build server/",
+    "deploy:railway": "npm run build && cp -r build server/ && cd server && npm install && npm start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "serve -s build -l $PORT"

@@ -19,9 +19,12 @@ app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 // Serve static files from React build
-const buildPath = path.join(__dirname, '..', 'build');
+const buildPath = path.join(__dirname, 'build');
 if (fs.existsSync(buildPath)) {
+  console.log(`📁 Serving React build from: ${buildPath}`);
   app.use(express.static(buildPath));
+} else {
+  console.log(`⚠️  React build not found at: ${buildPath}`);
 }
 
 // Rate limiting for uploads
@@ -271,7 +274,11 @@ app.get('*', (req, res) => {
   if (fs.existsSync(buildPath)) {
     res.sendFile(path.join(buildPath, 'index.html'));
   } else {
-    res.json({ message: 'React build not found. Please build the frontend first.' });
+    res.status(404).json({ 
+      message: 'React build not found. Please build the frontend first.',
+      buildPath: buildPath,
+      currentDir: __dirname
+    });
   }
 });
 
@@ -281,5 +288,7 @@ app.listen(PORT, () => {
   console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
   if (fs.existsSync(buildPath)) {
     console.log(`🌐 React frontend served from: ${buildPath}`);
+  } else {
+    console.log(`⚠️  React frontend build not found at: ${buildPath}`);
   }
 });
