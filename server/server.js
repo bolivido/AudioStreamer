@@ -79,7 +79,23 @@ console.log(`   CLOUDINARY_API_KEY: ${process.env.CLOUDINARY_API_KEY ? 'SET' : '
 console.log(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'}`);
 console.log(`   CLOUDINARY_URL: ${process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'}`);
 
-// Configure storage based on environment
+// Use local storage for now to ensure uploads work
+console.log(`🔧 Using local storage to ensure upload functionality`);
+storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, UPLOAD_DIR);
+  },
+  filename: (req, file, cb) => {
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+    const ext = path.extname(file.originalname);
+    cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+  }
+});
+useCloudStorage = false;
+console.log(`📁 Local storage configured successfully`);
+
+// TODO: Fix Cloudinary configuration
+/*
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
   try {
     // Configure Cloudinary
@@ -136,6 +152,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   useCloudStorage = false;
   console.log(`📁 Using local storage`);
 }
+*/
 
 // Ensure upload directory exists and log its location
 try {
