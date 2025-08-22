@@ -106,3 +106,4 @@ server/
 - Set up custom domains for production use
 - Enable automatic deployments from main branch
 - Use environment variables for configuration
+

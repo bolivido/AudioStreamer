@@ -72,3 +72,4 @@ If you prefer not to use Cloudinary:
 1. **Railway Pro** - Persistent volumes included
 2. **Local development** - Run on your computer
 3. **Other cloud storage** - AWS S3, Google Cloud Storage, etc.
+

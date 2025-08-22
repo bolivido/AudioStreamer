@@ -72,7 +72,21 @@ const ALLOWED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg', 'aud
 let storage;
 let useCloudStorage = false;
 
+// Debug Cloudinary environment variables
+console.log(`🔍 Cloudinary Environment Check:`);
+console.log(`   CLOUDINARY_CLOUD_NAME: ${process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET'}`);
+console.log(`   CLOUDINARY_API_KEY: ${process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET'}`);
+console.log(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'}`);
+console.log(`   CLOUDINARY_URL: ${process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'}`);
+
 if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+  // Configure Cloudinary
+  cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET
+  });
+  
   // Cloudinary storage
   const cloudinaryStorage = new CloudinaryStorage({
     cloudinary: cloudinary,
@@ -86,6 +100,7 @@ if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && proce
   storage = cloudinaryStorage;
   useCloudStorage = true;
   console.log(`☁️  Using Cloudinary cloud storage`);
+  console.log(`   Cloud Name: ${process.env.CLOUDINARY_CLOUD_NAME}`);
 } else {
   // Local storage
   storage = multer.diskStorage({
@@ -140,12 +155,30 @@ const upload = multer({
     fileSize: MAX_FILE_SIZE
   },
   fileFilter: (req, file, cb) => {
+    console.log(`🔍 File filter check: ${file.originalname} (${file.mimetype})`);
     if (ALLOWED_TYPES.includes(file.mimetype)) {
+      console.log(`✅ File type allowed: ${file.mimetype}`);
       cb(null, true);
     } else {
+      console.log(`❌ File type rejected: ${file.mimetype}`);
       cb(new Error('Invalid file type. Only audio files are allowed.'), false);
     }
   }
+}).single('audio');
+
+// Error handling middleware for multer
+app.use((error, req, res, next) => {
+  if (error instanceof multer.MulterError) {
+    console.error('Multer error:', error);
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ error: 'File too large. Maximum size is 100MB.' });
+    }
+    return res.status(400).json({ error: 'File upload error: ' + error.message });
+  } else if (error) {
+    console.error('Upload error:', error);
+    return res.status(500).json({ error: 'Upload failed: ' + error.message });
+  }
+  next();
 });
 
 // Get server storage information
@@ -187,7 +220,7 @@ app.get('/api/storage', async (req, res) => {
 });
 
 // Upload audio file
-app.post('/api/upload', uploadLimiter, upload.single('audio'), async (req, res) => {
+app.post('/api/upload', uploadLimiter, upload, async (req, res) => {
   try {
     console.log(`📤 Upload request received`);
     console.log(`📁 Request body:`, req.body);
