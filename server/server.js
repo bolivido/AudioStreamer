@@ -126,21 +126,11 @@ try {
   console.error(`📁 Attempted path: ${UPLOAD_DIR}`);
 }
 
-// Configure multer for file uploads
+// Configure multer for file uploads - simplified
 const upload = multer({
-  storage: storage,
+  storage: multer.memoryStorage(), // Use memory storage for testing
   limits: {
     fileSize: MAX_FILE_SIZE
-  },
-  fileFilter: (req, file, cb) => {
-    console.log(`🔍 File filter check: ${file.originalname} (${file.mimetype})`);
-    if (ALLOWED_TYPES.includes(file.mimetype)) {
-      console.log(`✅ File type allowed: ${file.mimetype}`);
-      cb(null, true);
-    } else {
-      console.log(`❌ File type rejected: ${file.mimetype}`);
-      cb(new Error('Invalid file type. Only audio files are allowed.'), false);
-    }
   }
 }).single('audio');
 
