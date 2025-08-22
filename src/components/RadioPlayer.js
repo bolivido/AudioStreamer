@@ -35,6 +35,9 @@ const RadioPlayer = ({
   useEffect(() => {
     if (isPlaying && streamUrl && audioRef.current) {
       console.log(`🎵 Auto-play triggered for: ${streamUrl}`);
+      // Ensure audio element is properly initialized
+      audioRef.current.crossOrigin = 'anonymous';
+      audioRef.current.preload = 'auto';
       handlePlay();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -66,57 +69,61 @@ const RadioPlayer = ({
   }, []);
 
   const handlePlay = async () => {
+    if (!streamUrl || !audioRef.current) {
+      console.log(`🎵 Cannot play: missing streamUrl or audio element`);
+      return;
+    }
+
     try {
-      console.log(`🎵 handlePlay called with streamUrl: ${streamUrl}`);
       setIsLoading(true);
       setError(null);
       onConnectionStatusChange('connecting');
-
-      if (audioRef.current) {
-        // Set up audio element with better error handling
-        audioRef.current.src = streamUrl;
-        audioRef.current.crossOrigin = 'anonymous';
+      
+      console.log(`🎵 handlePlay called with streamUrl: ${streamUrl}`);
+      
+      // Set the audio source
+      audioRef.current.src = streamUrl;
+      console.log(`🎵 Audio element src set to: ${streamUrl}`);
+      
+      // Wait for audio to be ready to play
+      await new Promise((resolve, reject) => {
+        const audio = audioRef.current;
         
-        console.log(`🎵 Audio element src set to: ${streamUrl}`);
+        const onCanPlay = () => {
+          console.log(`🎵 Audio can play - ready to start playback`);
+          audio.removeEventListener('canplay', onCanPlay);
+          audio.removeEventListener('error', onError);
+          clearTimeout(timeoutId);
+          resolve();
+        };
         
-        // Wait for audio to be ready
-        await new Promise((resolve, reject) => {
-          const audio = audioRef.current;
-          
-          const onCanPlay = () => {
-            console.log(`🎵 Audio can play - starting playback`);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('error', onError);
-            resolve();
-          };
-          
-          const onError = (e) => {
-            console.error(`🎵 Audio error event:`, e);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('error', onError);
-            reject(new Error('Audio failed to load'));
-          };
-          
-          audio.addEventListener('canplay', onCanPlay);
-          audio.addEventListener('error', onError);
-          
-          // Set a timeout for loading
-          setTimeout(() => {
-            console.log(`🎵 Audio loading timeout reached`);
-            audio.removeEventListener('canplay', onCanPlay);
-            audio.removeEventListener('error', onError);
-            reject(new Error('Audio loading timeout'));
-          }, 15000); // 15 second timeout - increased for slower connections
-        });
+        const onError = (event) => {
+          console.log(`🎵 Audio loading error:`, event);
+          audio.removeEventListener('canplay', onCanPlay);
+          audio.removeEventListener('error', onError);
+          clearTimeout(timeoutId);
+          reject(new Error('Audio failed to load'));
+        };
         
-        // Try to play
-        console.log(`🎵 Attempting to play audio`);
-        await audioRef.current.play();
-        console.log(`🎵 Audio playback started successfully`);
-        onPlayStateChange(true);
-        onConnectionStatusChange('connected');
-        startMetadataPolling();
-      }
+        // Set a longer timeout for loading (30 seconds for large files)
+        const timeoutId = setTimeout(() => {
+          console.log(`🎵 Audio loading timeout reached`);
+          audio.removeEventListener('canplay', onCanPlay);
+          audio.removeEventListener('error', onError);
+          reject(new Error('Audio loading timeout'));
+        }, 30000); // Increased to 30 seconds for large audio files
+        
+        audio.addEventListener('canplay', onCanPlay);
+        audio.addEventListener('error', onError);
+      });
+      
+      // Try to play
+      console.log(`🎵 Attempting to play audio`);
+      await audioRef.current.play();
+      console.log(`🎵 Audio playback started successfully`);
+      onPlayStateChange(true);
+      onConnectionStatusChange('connected');
+      startMetadataPolling();
     } catch (err) {
       console.error('Play error:', err);
       
@@ -147,6 +154,7 @@ const RadioPlayer = ({
       onPlayStateChange(false);
       onConnectionStatusChange('disconnected');
       stopMetadataPolling();
+      console.log(`🎵 Audio paused`);
     }
   };
 
@@ -176,7 +184,8 @@ const RadioPlayer = ({
     
     setError(errorMessage);
     onConnectionStatusChange('disconnected');
-    onPlayStateChange(false);
+    onPlayStateChange(false); // Ensure play state is set to false on error
+    stopMetadataPolling();
     
     // Only attempt reconnection for network errors
     if (!error || error.code === MediaError.MEDIA_ERR_NETWORK) {
