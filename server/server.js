@@ -14,7 +14,7 @@ const PORT = process.env.PORT || 3001;
 
 // Railway-specific configuration
 const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
-console.log(`🚂 Railway environment detected: ${isRailway ? 'YES' : 'NO'}`);
+console.log(`🚂 Railway environment detected: ${isRailway ? 'YES' : 'NO'} - Cloudinary Ready!`);
 console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 console.log(`🔧 Port: ${PORT}`);
 
