@@ -1,11 +1,53 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import config from '../config';
 
-const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl = config.serverUrl }) => {
+const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl = config.serverUrl, onAutoPlay }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
   const fileInputRef = useRef(null);
+
+  // Auto-play uploaded song
+  const autoPlaySong = (audioData) => {
+    if (config.autoPlay.enabled && onAutoPlay) {
+      setTimeout(() => {
+        onAutoPlay(audioData);
+      }, config.autoPlay.delay);
+    }
+  };
+
+  // Auto-discover songs from music folder
+  const discoverMusicFolder = async () => {
+    try {
+      const response = await fetch(`${serverUrl}/api/audio`);
+      if (response.ok) {
+        const songs = await response.json();
+        if (songs.length > 0 && !uploadedAudios.length) {
+          // Auto-play first song if no songs are currently loaded
+          const firstSong = songs[0];
+          const audioData = {
+            id: firstSong.id,
+            name: firstSong.name,
+            url: firstSong.streamUrl,
+            filename: firstSong.filename,
+            size: firstSong.size,
+            sizeFormatted: firstSong.sizeFormatted,
+            uploadDate: firstSong.uploadDate,
+            serverUrl: serverUrl
+          };
+          onAudioSelect(audioData);
+          autoPlaySong(audioData);
+        }
+      }
+    } catch (error) {
+      console.log('No existing songs found in music folder');
+    }
+  };
+
+  // Discover music on component mount
+  React.useEffect(() => {
+    discoverMusicFolder();
+  }, []);
 
   const handleDrag = (e) => {
     e.preventDefault();
@@ -69,6 +111,7 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
               
               onAudioSelect(audioData);
               setUploadProgress(prev => ({ ...prev, [file.name]: 100 }));
+              autoPlaySong(audioData); // Auto-play the song
             } else {
               throw new Error('Upload failed');
             }
@@ -124,23 +167,26 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
         onDragOver={handleDrag}
         onDrop={handleDrop}
       >
-        <div className="space-y-4">
-          <div className="text-6xl">🎵</div>
-          <div>
-            <p className="text-lg text-white mb-2">
-              {uploading ? 'Uploading to server...' : 'Drop your audio files here'}
-            </p>
-            <p className="text-sm text-gray-400 mb-4">
-              or click to browse files
-            </p>
-            <button
-              onClick={openFileDialog}
-              disabled={uploading}
-              className="btn-primary"
-            >
-              {uploading ? 'Uploading...' : 'Choose Audio Files'}
-            </button>
-          </div>
+        <div className="text-center">
+          <h3 className="text-xl font-semibold text-white mb-4">Upload Audio Files</h3>
+          {config.autoPlay.enabled && (
+            <div className="mb-4 p-3 bg-green-900/30 border border-green-500/50 rounded-lg">
+              <p className="text-green-400 text-sm">
+                🎵 Auto-play enabled - Songs will automatically start playing after upload
+              </p>
+            </div>
+          )}
+          <p className="text-gray-400 mb-6">
+            Drag and drop audio files here, or click to browse
+          </p>
+          <button
+            onClick={openFileDialog}
+            disabled={uploading}
+            className="btn-primary"
+          >
+            {uploading ? 'Uploading...' : 'Choose Audio Files'}
+          </button>
+        </div>
           
           {/* Upload Progress */}
           {Object.keys(uploadProgress).length > 0 && (

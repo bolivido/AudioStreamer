@@ -1,7 +1,8 @@
 // Environment configuration for Audio Streamer
 const config = {
-  // Server URL - defaults to localhost for development
-  serverUrl: process.env.REACT_APP_SERVER_URL || 'http://localhost:3001',
+  // Server URL - automatically detect Railway domain or use localhost for development
+  serverUrl: process.env.REACT_APP_SERVER_URL || 
+             (window.location.hostname === 'localhost' ? 'http://localhost:3001' : `https://${window.location.hostname}`),
   
   // API endpoints
   apiEndpoints: {
@@ -17,6 +18,14 @@ const config = {
   upload: {
     maxFileSize: 100 * 1024 * 1024, // 100MB
     allowedTypes: ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg', 'audio/flac']
+  },
+  
+  // Auto-play settings
+  autoPlay: {
+    enabled: true,
+    delay: 1000, // 1 second delay after upload
+    volume: 0.7, // Default volume
+    fadeIn: true // Smooth volume fade-in
   },
   
   // Radio streams

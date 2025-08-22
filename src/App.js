@@ -52,6 +52,20 @@ function App() {
     setNowPlaying(audio.name);
   };
 
+  const handleAutoPlay = (audio) => {
+    console.log(`🎵 Auto-playing uploaded song: ${audio.name}`);
+    setCurrentAudio(audio);
+    setStreamUrl(audio.url);
+    setAudioMode('upload');
+    setNowPlaying(audio.name);
+    
+    // Start playing after a short delay
+    setTimeout(() => {
+      setIsPlaying(true);
+      setConnectionStatus('connected');
+    }, config.autoPlay.delay);
+  };
+
   const handleStreamSelect = (url) => {
     setStreamUrl(url);
     setCurrentAudio(null);
@@ -119,6 +133,7 @@ function App() {
               onAudioRemove={handleAudioRemove}
               uploadedAudios={uploadedAudios}
               serverUrl={serverUrl}
+              onAutoPlay={handleAutoPlay}
             />
           )}
 
