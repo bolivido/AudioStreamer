@@ -11,7 +11,19 @@ const RadioPlayer = ({
   audioMode,
   currentAudio
 }) => {
-  // 🛡️ ULTIMATE SAFETY: Early return if anything is wrong
+  // 🚨 ALL HOOKS MUST BE CALLED FIRST (React Rules)
+  const audioRef = useRef(null);
+  const reconnectTimeoutRef = useRef(null);
+  const metadataIntervalRef = useRef(null);
+  
+  const [volume, setVolume] = useState(0.7);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [reconnectAttempts, setReconnectAttempts] = useState(0);
+  const [metadata, setMetadata] = useState({});
+  const [networkStatus, setNetworkStatus] = useState('online');
+
+  // 🛡️ SAFETY CHECK AFTER ALL HOOKS
   if (!audioMode || (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size))) {
     console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback');
     return (
@@ -39,20 +51,6 @@ const RadioPlayer = ({
       </div>
     );
   }
-
-  const audioRef = useRef(null);
-  const reconnectTimeoutRef = useRef(null);
-  const metadataIntervalRef = useRef(null);
-  
-  const [volume, setVolume] = useState(0.7);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [reconnectAttempts, setReconnectAttempts] = useState(0);
-  const [metadata, setMetadata] = useState({});
-  const [networkStatus, setNetworkStatus] = useState('online');
-
-  const MAX_RECONNECT_ATTEMPTS = 5;
-  const RECONNECT_DELAY = 3000; // 3 seconds
 
   useEffect(() => {
     if (audioRef.current) {
