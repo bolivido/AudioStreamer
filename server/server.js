@@ -10,6 +10,12 @@ const helmet = require('helmet');
 const app = express();
 const PORT = process.env.PORT || 3001;
 
+// Railway-specific configuration
+const isRailway = process.env.RAILWAY_ENVIRONMENT || process.env.RAILWAY_PROJECT_ID;
+console.log(`🚂 Railway environment detected: ${isRailway ? 'YES' : 'NO'}`);
+console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+console.log(`🔧 Port: ${PORT}`);
+
 // Security middleware
 app.use(helmet({
   contentSecurityPolicy: false // Disable CSP for development
@@ -435,7 +441,7 @@ const startServer = () => {
 const startKeepAlive = () => {
   console.log(`💓 Starting keep-alive mechanism...`);
   
-  // Send periodic health checks
+  // Send periodic health checks (more frequent for Railway free tier)
   setInterval(() => {
     try {
       const healthStatus = {
@@ -449,16 +455,26 @@ const startKeepAlive = () => {
         port: PORT
       };
       console.log(`💓 Keep-alive: Server running for ${Math.floor(process.uptime())}s`);
+      
+      // Also log to stderr to ensure Railway sees activity
+      console.error(`💓 Keep-alive: Server active at ${new Date().toISOString()}`);
     } catch (error) {
       console.log(`⚠️  Keep-alive error: ${error.message}`);
     }
-  }, 30000); // Every 30 seconds
+  }, 15000); // Every 15 seconds (more frequent)
   
   // Log memory usage periodically
   setInterval(() => {
     const memUsage = process.memoryUsage();
     console.log(`📊 Memory usage: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB / ${Math.round(memUsage.heapTotal / 1024 / 1024)}MB`);
-  }, 60000); // Every minute
+    console.error(`📊 Memory: ${Math.round(memUsage.heapUsed / 1024 / 1024)}MB used`);
+  }, 30000); // Every 30 seconds
+  
+  // Additional activity to keep Railway happy
+  setInterval(() => {
+    console.log(`🎵 Audio Streamer Server - Active and serving requests`);
+    console.error(`🎵 Server heartbeat: ${new Date().toISOString()}`);
+  }, 10000); // Every 10 seconds
 };
 
 // Health check endpoint
@@ -472,7 +488,8 @@ app.get('/api/health', (req, res) => {
       uploadDir: UPLOAD_DIR,
       uploadDirExists: fs.existsSync(UPLOAD_DIR),
       hasBuildFiles: hasBuildFiles,
-      port: PORT
+      port: PORT,
+      railway: isRailway
     };
     
     // Check if upload directory is accessible
@@ -495,6 +512,25 @@ app.get('/api/health', (req, res) => {
       timestamp: new Date().toISOString()
     });
   }
+});
+
+// Simple ping endpoint for Railway
+app.get('/ping', (req, res) => {
+  res.json({ 
+    pong: true, 
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
+});
+
+// Root endpoint for Railway health checks
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Audio Streamer Server',
+    status: 'running',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime()
+  });
 });
 
 // Debug endpoint for storage troubleshooting
