@@ -181,6 +181,20 @@ app.use((error, req, res, next) => {
   next();
 });
 
+// Check environment variables
+app.get('/api/env-check', (req, res) => {
+  res.json({
+    cloudinary: {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET',
+      apiKey: process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET',
+      apiSecret: process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET',
+      url: process.env.CLOUDINARY_URL ? 'SET' : 'NOT SET'
+    },
+    useCloudStorage: useCloudStorage,
+    timestamp: new Date().toISOString()
+  });
+});
+
 // Get server storage information
 app.get('/api/storage', async (req, res) => {
   try {
