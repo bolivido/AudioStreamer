@@ -29,17 +29,21 @@ function App() {
         if (response.ok) {
           const serverAudios = await response.json();
           console.log(`🎵 Found ${serverAudios.length} songs on server`);
+          console.log('🎵 Raw server audio data:', serverAudios);
           
           if (serverAudios.length > 0) {
             // Convert server audio format to match our local format
-            const formattedAudios = serverAudios.map(audio => ({
-              id: audio.name,
-              name: audio.name,
-              url: `${serverUrl}/api/stream/${audio.name}`,
-              type: audio.mimetype || 'audio/mpeg',
-              size: audio.size || 0,
-              duration: audio.duration || 0
-            }));
+            const formattedAudios = serverAudios
+              .filter(audio => audio && audio.name) // Filter out invalid audio objects
+              .map(audio => ({
+                id: audio.name,
+                name: audio.name,
+                url: `${serverUrl}/api/stream/${audio.name}`,
+                type: audio.mimetype || 'audio/mpeg',
+                size: audio.size || 0,
+                duration: audio.duration || 0
+              }))
+              .filter(audio => audio.type && audio.size); // Only keep audios with complete data
             
             setUploadedAudios(formattedAudios);
             

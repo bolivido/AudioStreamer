@@ -258,35 +258,43 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
             Your Audio Library ({uploadedAudios.length})
           </h3>
           <div className="space-y-2 max-h-64 overflow-y-auto">
-            {uploadedAudios.map((audio) => (
-              <div
-                key={audio.id}
-                className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="text-white font-medium truncate">{audio.name}</p>
-                  <div className="flex items-center space-x-4 text-sm text-gray-400">
-                    <span>{formatFileSize(audio.size)}</span>
-                    <span>{formatDuration(audio.duration)}</span>
-                    <span className="text-xs">{audio.type.split('/')[1].toUpperCase()}</span>
+            {uploadedAudios.map((audio) => {
+              // 🛡️ SAFETY CHECK: Ensure audio object has required properties
+              if (!audio || !audio.id || !audio.name) {
+                console.warn('⚠️ AudioUploader: Invalid audio object:', audio);
+                return null; // Skip rendering invalid audio objects
+              }
+              
+              return (
+                <div
+                  key={audio.id}
+                  className="flex items-center justify-between p-3 bg-gray-700/50 rounded-lg border border-gray-600"
+                >
+                  <div className="flex-1 min-w-0">
+                    <p className="text-white font-medium truncate">{audio.name}</p>
+                    <div className="flex items-center space-x-4 text-sm text-gray-400">
+                      <span>{formatFileSize(audio.size || 0)}</span>
+                      <span>{formatDuration(audio.duration || 0)}</span>
+                      <span className="text-xs">{(audio.type && audio.type.split && audio.type.split('/')[1])?.toUpperCase() || 'AUDIO'}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      onClick={() => onAudioSelect(audio)}
+                      className="px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded transition-colors"
+                    >
+                      Play
+                    </button>
+                    <button
+                      onClick={() => onAudioRemove(audio.id)}
+                      className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"
+                    >
+                      Remove
+                    </button>
                   </div>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => onAudioSelect(audio)}
-                    className="px-3 py-1 bg-primary-600 hover:bg-primary-700 text-white text-sm rounded transition-colors"
-                  >
-                    Play
-                  </button>
-                  <button
-                    onClick={() => onAudioRemove(audio.id)}
-                    className="px-3 py-1 bg-red-600 hover:bg-red-700 text-white text-sm rounded transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
