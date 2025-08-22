@@ -364,9 +364,99 @@ function validateServerStartup() {
   }
 }
 
+// Simplified server startup
+const startServer = () => {
+  try {
+    console.log(`🚀 Starting Audio Streamer Server...`);
+    console.log(`📁 Working directory: ${process.cwd()}`);
+    console.log(`📁 Server directory: ${__dirname}`);
+    
+    // Basic validation
+    if (!validateServerStartup()) {
+      console.error(`❌ Server validation failed - exiting`);
+      process.exit(1);
+    }
+    
+    // Start the server
+    const server = app.listen(PORT, () => {
+      console.log(`✅ Server validation successful`);
+      console.log(`📁 Upload directory: ${UPLOAD_DIR}`);
+      console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
+      if (hasBuildFiles) {
+        console.log(`🌐 React frontend served from: ${buildPath}`);
+      } else {
+        console.log(`⚠️  React frontend build not found at: ${buildPath}`);
+        console.log(`🔧 Server running in API-only mode`);
+      }
+      console.log(`🚀 Audio Streamer Server ready on port ${PORT}`);
+    });
+    
+    // Handle server errors
+    server.on('error', (error) => {
+      console.error(`❌ Server error: ${error.message}`);
+      if (error.code === 'EADDRINUSE') {
+        console.error(`❌ Port ${PORT} is already in use`);
+      }
+      process.exit(1);
+    });
+    
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log(`🛑 Received SIGTERM - shutting down gracefully`);
+      server.close(() => {
+        console.log(`✅ Server closed`);
+        process.exit(0);
+      });
+    });
+    
+    process.on('SIGINT', () => {
+      console.log(`🛑 Received SIGINT - shutting down gracefully`);
+      server.close(() => {
+        console.log(`✅ Server closed`);
+        process.exit(0);
+      });
+    });
+    
+  } catch (error) {
+    console.error(`❌ Server startup failed: ${error.message}`);
+    process.exit(1);
+  }
+};
+
 // Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'OK', timestamp: new Date().toISOString() });
+  try {
+    const healthStatus = {
+      status: 'OK',
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      uploadDir: UPLOAD_DIR,
+      uploadDirExists: fs.existsSync(UPLOAD_DIR),
+      hasBuildFiles: hasBuildFiles,
+      port: PORT
+    };
+    
+    // Check if upload directory is accessible
+    if (fs.existsSync(UPLOAD_DIR)) {
+      try {
+        const files = fs.readdirSync(UPLOAD_DIR);
+        healthStatus.fileCount = files.length;
+        healthStatus.isWritable = true;
+      } catch (error) {
+        healthStatus.isWritable = false;
+        healthStatus.readError = error.message;
+      }
+    }
+    
+    res.json(healthStatus);
+  } catch (error) {
+    res.status(500).json({ 
+      status: 'ERROR', 
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
 });
 
 // Debug endpoint for storage troubleshooting
@@ -428,23 +518,4 @@ app.get('*', (req, res) => {
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`🚀 Audio Streamer Server starting on port ${PORT}`);
-  
-  // Validate server startup
-  if (validateServerStartup()) {
-    console.log(`✅ Server validation successful`);
-    console.log(`📁 Upload directory: ${UPLOAD_DIR}`);
-    console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
-    if (hasBuildFiles) {
-      console.log(`🌐 React frontend served from: ${buildPath}`);
-    } else {
-      console.log(`⚠️  React frontend build not found at: ${buildPath}`);
-      console.log(`🔧 Server running in API-only mode`);
-    }
-    console.log(`🚀 Audio Streamer Server ready on port ${PORT}`);
-  } else {
-    console.error(`❌ Server validation failed - shutting down`);
-    process.exit(1);
-  }
-});
+startServer();
