@@ -54,8 +54,28 @@ const UPLOAD_DIR = path.join(__dirname, 'uploads');
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_TYPES = ['audio/mpeg', 'audio/wav', 'audio/aac', 'audio/ogg', 'audio/flac'];
 
-// Ensure upload directory exists
-fs.ensureDirSync(UPLOAD_DIR);
+// Ensure upload directory exists and log its location
+try {
+  fs.ensureDirSync(UPLOAD_DIR);
+  console.log(`📁 Upload directory created/verified: ${UPLOAD_DIR}`);
+  console.log(`📂 Upload directory absolute path: ${path.resolve(UPLOAD_DIR)}`);
+  
+  // Check if directory is writable
+  const testFile = path.join(UPLOAD_DIR, '.test-write');
+  fs.writeFileSync(testFile, 'test');
+  fs.unlinkSync(testFile);
+  console.log(`✅ Upload directory is writable`);
+  
+  // List current contents
+  const currentFiles = fs.readdirSync(UPLOAD_DIR);
+  console.log(`📦 Current upload directory contents: ${currentFiles.length} files`);
+  if (currentFiles.length > 0) {
+    console.log(`📋 Files: ${currentFiles.join(', ')}`);
+  }
+} catch (error) {
+  console.error(`❌ Error setting up upload directory: ${error.message}`);
+  console.error(`📁 Attempted path: ${UPLOAD_DIR}`);
+}
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -124,8 +144,30 @@ app.get('/api/storage', async (req, res) => {
 // Upload audio file
 app.post('/api/upload', uploadLimiter, upload.single('audio'), async (req, res) => {
   try {
+    console.log(`📤 Upload request received`);
+    console.log(`📁 Request body:`, req.body);
+    console.log(`📁 Request file:`, req.file);
+    
     if (!req.file) {
+      console.log(`❌ No file in request`);
       return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    console.log(`📁 File details:`, {
+      filename: req.file.filename,
+      originalName: req.file.originalname,
+      size: req.file.size,
+      mimetype: req.file.mimetype,
+      path: req.file.path
+    });
+
+    // Verify file was actually saved
+    if (fs.existsSync(req.file.path)) {
+      console.log(`✅ File successfully saved to: ${req.file.path}`);
+      const fileStats = fs.statSync(req.file.path);
+      console.log(`📊 File stats:`, fileStats);
+    } else {
+      console.log(`❌ File not found at expected path: ${req.file.path}`);
     }
 
     const fileInfo = {
@@ -139,6 +181,16 @@ app.post('/api/upload', uploadLimiter, upload.single('audio'), async (req, res) 
     };
 
     console.log('File uploaded:', fileInfo);
+    
+    // List all files in upload directory after upload
+    try {
+      const allFiles = fs.readdirSync(UPLOAD_DIR);
+      console.log(`📦 Total files in upload directory: ${allFiles.length}`);
+      console.log(`📋 Files: ${allFiles.join(', ')}`);
+    } catch (listError) {
+      console.log(`⚠️  Could not list upload directory: ${listError.message}`);
+    }
+    
     res.json({
       message: 'File uploaded successfully',
       file: fileInfo
@@ -309,6 +361,43 @@ function validateServerStartup() {
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
+});
+
+// Debug endpoint for storage troubleshooting
+app.get('/api/debug/storage', (req, res) => {
+  try {
+    const debugInfo = {
+      uploadDir: UPLOAD_DIR,
+      uploadDirAbsolute: path.resolve(UPLOAD_DIR),
+      uploadDirExists: fs.existsSync(UPLOAD_DIR),
+      currentWorkingDir: process.cwd(),
+      serverDir: __dirname,
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
+    };
+
+    if (fs.existsSync(UPLOAD_DIR)) {
+      try {
+        const files = fs.readdirSync(UPLOAD_DIR);
+        debugInfo.fileCount = files.length;
+        debugInfo.files = files;
+        debugInfo.isWritable = true;
+        
+        // Test write permission
+        const testFile = path.join(UPLOAD_DIR, '.debug-test');
+        fs.writeFileSync(testFile, 'debug test');
+        fs.unlinkSync(testFile);
+        debugInfo.writeTest = 'passed';
+      } catch (error) {
+        debugInfo.readError = error.message;
+        debugInfo.isWritable = false;
+      }
+    }
+
+    res.json(debugInfo);
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
 });
 
 // Serve React app for any non-API routes (client-side routing)
