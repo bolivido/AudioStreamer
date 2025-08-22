@@ -13,7 +13,7 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build:railway": "react-scripts build && cp -r build server/",
-    "deploy:railway": "npm run build && cp -r build server/ && cd server && npm install && npm start",
+    "deploy:railway": "npm run build && cp -r build server/ && cd server && npm install --production && npm start",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
     "serve": "serve -s build -l $PORT"
@@ -44,5 +44,9 @@
   "engines": {
     "node": ">=18.0.0",
     "npm": ">=8.0.0"
+  },
+  "railway": {
+    "buildCommand": "npm run build",
+    "startCommand": "npm run deploy:railway"
   }
 }
