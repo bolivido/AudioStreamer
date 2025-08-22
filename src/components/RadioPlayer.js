@@ -108,6 +108,28 @@ const RadioPlayer = ({
     );
   }
 
+  // 🚨 ADDITIONAL SAFETY: Double-check before rendering
+  if (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size)) {
+    console.error('🚨 CRITICAL: RadioPlayer about to crash! Forcing fallback render');
+    return (
+      <div className="card bg-red-900/20 border-red-500">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-red-300 mb-2">⚠️ Safety Mode</h2>
+          <p className="text-lg text-red-200">Audio data incomplete - preventing crash</p>
+          <p className="text-sm text-red-300 mt-2">
+            Mode: {audioMode} | Has Audio: {!!currentAudio} | Has Type: {!!currentAudio?.type} | Has Size: {!!currentAudio?.size}
+          </p>
+        </div>
+        
+        <div className="text-center">
+          <p className="text-sm text-red-400">
+            Please select a complete audio file from the list above
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   const handlePlay = async () => {
     if (!streamUrl || !audioRef.current) {
       console.log(`🎵 Cannot play: missing streamUrl or audio element`);
@@ -309,7 +331,7 @@ const RadioPlayer = ({
         <p className="text-lg text-gray-300">
           {nowPlaying}
         </p>
-        {audioMode === 'upload' && currentAudio && (
+        {audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && (
           <div className="text-sm text-gray-400 mt-1 space-y-1">
             <p>{(currentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(currentAudio.size / 1024)} KB</p>
             {currentAudio.duration && currentAudio.duration > 0 && (
