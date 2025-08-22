@@ -11,10 +11,18 @@ const app = express();
 const PORT = process.env.PORT || 3001;
 
 // Security middleware
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false // Disable CSP for development
+}));
 app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Serve static files from React build
+const buildPath = path.join(__dirname, '..', 'build');
+if (fs.existsSync(buildPath)) {
+  app.use(express.static(buildPath));
+}
 
 // Rate limiting for uploads
 const uploadLimiter = rateLimit({
@@ -258,8 +266,20 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
 
+// Serve React app for any non-API routes (client-side routing)
+app.get('*', (req, res) => {
+  if (fs.existsSync(buildPath)) {
+    res.sendFile(path.join(buildPath, 'index.html'));
+  } else {
+    res.json({ message: 'React build not found. Please build the frontend first.' });
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Audio Streamer Server running on port ${PORT}`);
   console.log(`📁 Upload directory: ${UPLOAD_DIR}`);
   console.log(`💾 Max file size: ${formatBytes(MAX_FILE_SIZE)}`);
+  if (fs.existsSync(buildPath)) {
+    console.log(`🌐 React frontend served from: ${buildPath}`);
+  }
 });

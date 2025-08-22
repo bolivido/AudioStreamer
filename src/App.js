@@ -3,6 +3,7 @@ import RadioPlayer from './components/RadioPlayer';
 import StreamConfig from './components/StreamConfig';
 import AudioUploader from './components/AudioUploader';
 import ServerDashboard from './components/ServerDashboard';
+import config from './config';
 
 function App() {
   const [streamUrl, setStreamUrl] = useState('');
@@ -12,42 +13,10 @@ function App() {
   const [uploadedAudios, setUploadedAudios] = useState([]);
   const [currentAudio, setCurrentAudio] = useState(null);
   const [audioMode, setAudioMode] = useState('stream'); // 'stream', 'upload', or 'server'
-  const [serverUrl] = useState('http://localhost:3001');
+  const [serverUrl] = useState(config.serverUrl);
 
   // Working radio stream URLs - optimized for reliability
-  const defaultStreams = [
-    { 
-      name: 'Radio Paradise (Fast)', 
-      url: 'https://stream.radioparadise.com/aac-64',
-      description: 'Eclectic mix - optimized for speed'
-    },
-    { 
-      name: 'SomaFM Groove Salad', 
-      url: 'https://ice1.somafm.com/groovesalad-64-mp3',
-      description: 'Ambient beats - faster loading'
-    },
-    { 
-      name: 'SomaFM Drone Zone', 
-      url: 'https://ice1.somafm.com/dronezone-64-mp3',
-      description: 'Atmospheric textures - optimized'
-    },
-    { 
-      name: 'SomaFM Lush', 
-      url: 'https://ice1.somafm.com/lush-64-mp3',
-      description: 'Female vocals - faster stream'
-    },
-    { 
-      name: 'NTS Radio 1', 
-      url: 'https://stream.nts.live/nts1',
-      description: 'London-based independent radio'
-    },
-    { 
-      name: 'FIP Radio', 
-      url: 'https://icecast.radiofrance.fr/fip-midfi.mp3',
-      description: 'French eclectic music station'
-    }
-  ];
-
+  const defaultStreams = config.defaultStreams;
 
 
   const handlePlayStateChange = (playing) => {

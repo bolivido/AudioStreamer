@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import config from '../config';
 
-const ServerDashboard = ({ serverUrl = 'http://localhost:3001' }) => {
+const ServerDashboard = ({ serverUrl = config.serverUrl }) => {
   const [storageInfo, setStorageInfo] = useState(null);
   const [audioFiles, setAudioFiles] = useState([]);
   const [loading, setLoading] = useState(true);

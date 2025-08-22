@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import config from '../config';
 
-const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl = 'http://localhost:3001' }) => {
+const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl = config.serverUrl }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState({});
