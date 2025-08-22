@@ -11,6 +11,35 @@ const RadioPlayer = ({
   audioMode,
   currentAudio
 }) => {
+  // 🛡️ ULTIMATE SAFETY: Early return if anything is wrong
+  if (!audioMode || (audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size))) {
+    console.log('🛡️ RadioPlayer Safety: Invalid props, showing fallback');
+    return (
+      <div className="card">
+        <div className="text-center mb-6">
+          <h2 className="text-2xl font-semibold text-white mb-2">Radio Player</h2>
+          <p className="text-lg text-gray-300">Stream Mode (Safe Fallback)</p>
+        </div>
+        
+        <div className="flex flex-col items-center space-y-6">
+          <button
+            onClick={() => console.log('Fallback play clicked')}
+            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800 bg-primary-600 hover:bg-primary-700 text-white"
+          >
+            ▶️
+          </button>
+          
+          <div className="text-center">
+            <p className="text-xs text-gray-500 mb-1">Stream Source</p>
+            <p className="text-sm text-gray-400 font-mono break-all max-w-xs">
+              {streamUrl || 'No stream selected'}
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const audioRef = useRef(null);
   const reconnectTimeoutRef = useRef(null);
   const metadataIntervalRef = useRef(null);
@@ -75,7 +104,7 @@ const RadioPlayer = ({
     }
     
     // Additional safety check for upload mode
-    if (safeAudioMode === 'upload' && (!safeCurrentAudio || !safeCurrentAudio.type)) {
+    if (audioMode === 'upload' && (!currentAudio || !currentAudio.type)) {
       console.log(`🎵 Cannot play: incomplete audio data for upload mode`);
       return;
     }
@@ -255,83 +284,29 @@ const RadioPlayer = ({
 
 
   // Safety check: if we're in upload mode but currentAudio is incomplete, fall back to stream mode
-  const safeAudioMode = audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) ? 'stream' : audioMode;
-  const safeCurrentAudio = safeAudioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size ? currentAudio : null;
-  
-  // Debug logging to help identify the issue
-  if (audioMode === 'upload' && currentAudio) {
-    console.log('🔍 RadioPlayer Debug:', {
-      currentAudio: currentAudio ? 'EXISTS' : 'NULL',
-      hasType: currentAudio && currentAudio.type ? 'YES' : 'NO',
-      hasSize: currentAudio && currentAudio.size ? 'YES' : 'NO',
-      safeAudioMode,
-      safeCurrentAudio: !!safeCurrentAudio
-    });
-  }
 
-  // Ultimate safety check - if anything is wrong, show stream mode
-  if (safeAudioMode === 'upload' && (!safeCurrentAudio || !safeCurrentAudio.type || !safeCurrentAudio.size)) {
-    console.log('🛡️ Safety fallback: Switching to stream mode due to incomplete audio data');
-    return (
-      <div className="card">
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-semibold text-white mb-2">Radio Player</h2>
-          <p className="text-lg text-gray-300">Stream Mode (Audio data incomplete)</p>
-        </div>
-        
-        {/* Audio Element */}
-        <audio
-          ref={audioRef}
-          onError={handleError}
-          onEnded={handleError}
-          preload="none"
-          style={{ display: 'none' }}
-        />
 
-        {/* Controls */}
-        <div className="flex flex-col items-center space-y-6">
-          <button
-            onClick={handlePlay}
-            disabled={isLoading}
-            className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold transition-all duration-200 focus:outline-none focus:ring-4 focus:ring-primary-500 focus:ring-offset-2 focus:ring-offset-gray-800 bg-primary-600 hover:bg-primary-700 text-white"
-          >
-            {isLoading ? (
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
-            ) : (
-              '▶️'
-            )}
-          </button>
-          
-          <div className="text-center">
-            <p className="text-xs text-gray-500 mb-1">Stream Source</p>
-            <p className="text-sm text-gray-400 font-mono break-all max-w-xs">
-              {streamUrl || 'No stream selected'}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+
 
   return (
     <div className="card">
       {/* Now Playing Display */}
       <div className="text-center mb-6">
         <h2 className="text-2xl font-semibold text-white mb-2">
-          {isPlaying ? 'Now Playing' : safeAudioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
+          {isPlaying ? 'Now Playing' : audioMode === 'upload' ? 'Audio Player' : 'Radio Player'}
         </h2>
         <p className="text-lg text-gray-300">
           {nowPlaying}
         </p>
-        {safeAudioMode === 'upload' && safeCurrentAudio && (
+        {audioMode === 'upload' && currentAudio && (
           <div className="text-sm text-gray-400 mt-1 space-y-1">
-            <p>{(safeCurrentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(safeCurrentAudio.size / 1024)} KB</p>
-            {safeCurrentAudio.duration && safeCurrentAudio.duration > 0 && (
-              <p>Duration: {Math.floor(safeCurrentAudio.duration / 60)}:{Math.floor(safeCurrentAudio.duration % 60).toString().padStart(2, '0')}</p>
+            <p>{(currentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(currentAudio.size / 1024)} KB</p>
+            {currentAudio.duration && currentAudio.duration > 0 && (
+              <p>Duration: {Math.floor(currentAudio.duration / 60)}:{Math.floor(currentAudio.duration % 60).toString().padStart(2, '0')}</p>
             )}
           </div>
         )}
-        {safeAudioMode === 'stream' && metadata.artist && (
+        {audioMode === 'stream' && metadata.artist && (
           <p className="text-sm text-gray-400 mt-1">
             {metadata.artist} • {metadata.album}
           </p>
@@ -389,12 +364,12 @@ const RadioPlayer = ({
 
         {/* Source Display */}
         <div className="text-center">
-          {safeAudioMode === 'upload' ? (
+          {audioMode === 'upload' ? (
             <>
               <p className="text-xs text-gray-500 mb-1">Audio File</p>
-              <p className="text-sm text-gray-400 font-medium">
-                {safeCurrentAudio?.name || 'Unknown File'}
-              </p>
+                              <p className="text-sm text-gray-400 font-medium">
+                  {currentAudio?.name || 'Unknown File'}
+                </p>
               <p className="text-xs text-gray-500 mt-1">
                 Local file • No connection needed
               </p>
@@ -433,7 +408,7 @@ const RadioPlayer = ({
 
       {/* Status Display */}
       <div className="mt-6 text-center space-y-2">
-        {safeAudioMode === 'upload' ? (
+                  {audioMode === 'upload' ? (
           <div className="inline-flex items-center space-x-2">
             <div className="w-2 h-2 rounded-full bg-green-500"></div>
             <span className="text-xs text-gray-400">
