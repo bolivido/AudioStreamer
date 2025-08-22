@@ -45,8 +45,9 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
   };
 
   // Discover music on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     discoverMusicFolder();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDrag = (e) => {
@@ -99,7 +100,7 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
               // Create audio data from server response
               const audioData = {
                 id: result.file.filename,
-                name: file.name.replace(/\.[^/.]+$/, ""),
+                name: file.name.replace(/\.[^/.]+$/, ""), // Remove extension
                 url: `${serverUrl}/api/stream/${result.file.filename}`,
                 filename: result.file.filename,
                 size: result.file.size,
@@ -187,32 +188,32 @@ const AudioUploader = ({ onAudioSelect, onAudioRemove, uploadedAudios, serverUrl
             {uploading ? 'Uploading...' : 'Choose Audio Files'}
           </button>
         </div>
-          
-          {/* Upload Progress */}
-          {Object.keys(uploadProgress).length > 0 && (
-            <div className="mt-4 space-y-2">
-              {Object.entries(uploadProgress).map(([filename, progress]) => (
-                <div key={filename} className="text-sm">
-                  <div className="flex justify-between text-gray-300 mb-1">
-                    <span className="truncate">{filename}</span>
-                    <span>{progress === -1 ? '❌' : progress === 100 ? '✅' : `${progress}%`}</span>
-                  </div>
-                  {progress >= 0 && progress < 100 && (
-                    <div className="w-full bg-gray-700 rounded-full h-2">
-                      <div 
-                        className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${progress}%` }}
-                      ></div>
-                    </div>
-                  )}
+        
+        {/* Upload Progress */}
+        {Object.keys(uploadProgress).length > 0 && (
+          <div className="mt-4 space-y-2">
+            {Object.entries(uploadProgress).map(([filename, progress]) => (
+              <div key={filename} className="text-sm">
+                <div className="flex justify-between text-gray-300 mb-1">
+                  <span className="truncate">{filename}</span>
+                  <span>{progress === -1 ? '❌' : progress === 100 ? '✅' : `${progress}%`}</span>
                 </div>
-              ))}
-            </div>
-          )}
-          <p className="text-xs text-gray-500">
-            Supported formats: MP3, WAV, AAC, OGG, FLAC
-          </p>
-        </div>
+                {progress >= 0 && progress < 100 && (
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div 
+                      className="bg-primary-500 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${progress}%` }}
+                    ></div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+        
+        <p className="text-xs text-gray-500 mt-4">
+          Supported formats: MP3, WAV, AAC, OGG, FLAC
+        </p>
       </div>
 
       {/* Hidden File Input */}
