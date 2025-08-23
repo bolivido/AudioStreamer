@@ -257,21 +257,48 @@ function App() {
           )}
 
           {/* Radio Player - Only render when we have complete data */}
-          {((audioMode === 'stream' && streamUrl) || (audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && streamUrl)) && (
-            <>
-              <RadioPlayer
-                streamUrl={streamUrl}
-                onPlayStateChange={handlePlayStateChange}
-                onNowPlayingChange={handleNowPlayingChange}
-                onConnectionStatusChange={handleConnectionStatusChange}
-                isPlaying={isPlaying}
-                nowPlaying={nowPlaying}
-                connectionStatus={connectionStatus}
-                audioMode={audioMode}
-                currentAudio={currentAudio}
-              />
-            </>
-          )}
+          {(() => {
+            try {
+              const shouldRenderStream = audioMode === 'stream' && streamUrl;
+              const shouldRenderUpload = audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && streamUrl;
+              
+              console.log('🔍 RadioPlayer Render Check:', {
+                audioMode,
+                hasStreamUrl: !!streamUrl,
+                hasCurrentAudio: !!currentAudio,
+                currentAudioType: currentAudio?.type,
+                currentAudioSize: currentAudio?.size,
+                shouldRenderStream,
+                shouldRenderUpload
+              });
+              
+              if (shouldRenderStream || shouldRenderUpload) {
+                return (
+                  <RadioPlayer
+                    streamUrl={streamUrl}
+                    onPlayStateChange={handlePlayStateChange}
+                    onNowPlayingChange={handleNowPlayingChange}
+                    onConnectionStatusChange={handleConnectionStatusChange}
+                    isPlaying={isPlaying}
+                    nowPlaying={nowPlaying}
+                    connectionStatus={connectionStatus}
+                    audioMode={audioMode}
+                    currentAudio={currentAudio}
+                  />
+                );
+              }
+              
+              return null;
+            } catch (error) {
+              console.error('🚨 Error in RadioPlayer render logic:', error);
+              return (
+                <div className="mt-6 p-4 bg-red-900/30 border border-red-500/50 rounded-lg text-center">
+                  <p className="text-red-300">⚠️ Error rendering RadioPlayer</p>
+                  <p className="text-xs text-red-400 mt-2">{error.message}</p>
+                </div>
+              );
+            }
+          })()}
 
           {/* Safety Message for Upload Mode - Show when in upload mode but no audio selected */}
           {audioMode === 'upload' && (!currentAudio || !currentAudio.type || !currentAudio.size) && (

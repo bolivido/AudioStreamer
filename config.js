@@ -45,6 +45,12 @@ export const config = {
     fadeOutDuration: 500,
   },
   
+  // Auto-play settings
+  autoPlay: {
+    enabled: false, // Set to true to auto-play first song
+    delay: 1000, // Delay before starting playback (ms)
+  },
+  
   // Reconnection settings
   reconnection: {
     maxAttempts: 5,
