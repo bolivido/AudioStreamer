@@ -333,12 +333,86 @@ const RadioPlayer = ({
           <p className="text-lg text-gray-300">
             {nowPlaying}
           </p>
-          {audioMode === 'upload' && currentAudio && currentAudio.type && currentAudio.size && (
+          {audioMode === 'upload' && currentAudio && (
             <div className="text-sm text-gray-400 mt-1 space-y-1">
-              <p>{(currentAudio.type && currentAudio.type.split && currentAudio.type.split('/')[1])?.toUpperCase() || 'AUDIO'} • {Math.round(currentAudio.size / 1024)} KB</p>
-              {currentAudio.duration && currentAudio.duration > 0 && (
-                <p>Duration: {Math.floor(currentAudio.duration / 60)}:{Math.floor(currentAudio.duration % 60).toString().padStart(2, '0')}</p>
-              )}
+              {(() => {
+                try {
+                  // 🛡️ COMPREHENSIVE SAFETY: Multiple layers of protection
+                  const fileType = currentAudio?.type;
+                  const fileSize = currentAudio?.size;
+                  const fileDuration = currentAudio?.duration;
+                  
+                  // Validate all properties exist and are valid
+                  if (!fileType || !fileSize || typeof fileSize !== 'number') {
+                    console.warn('⚠️ RadioPlayer: Invalid audio properties:', { fileType, fileSize, fileDuration });
+                    return (
+                      <>
+                        <p>AUDIO • {Math.round((fileSize || 0) / 1024)} KB</p>
+                        {fileDuration && fileDuration > 0 && (
+                          <p>Duration: {Math.floor(fileDuration / 60)}:{Math.floor(fileDuration % 60).toString().padStart(2, '0')}</p>
+                        )}
+                      </>
+                    );
+                  }
+                  
+                  // Safe type extraction with fallback
+                  let typeDisplay = 'AUDIO';
+                  try {
+                    if (fileType && typeof fileType === 'string' && fileType.includes('/')) {
+                      const typeParts = fileType.split('/');
+                      if (typeParts.length > 1 && typeParts[1]) {
+                        typeDisplay = typeParts[1].toUpperCase();
+                      }
+                    }
+                  } catch (typeError) {
+                    console.warn('⚠️ RadioPlayer: Error parsing file type:', typeError);
+                    typeDisplay = 'AUDIO';
+                  }
+                  
+                  // Safe size calculation
+                  let sizeDisplay = '0 KB';
+                  try {
+                    if (fileSize && !isNaN(fileSize) && fileSize > 0) {
+                      sizeDisplay = `${Math.round(fileSize / 1024)} KB`;
+                    }
+                  } catch (sizeError) {
+                    console.warn('⚠️ RadioPlayer: Error calculating file size:', sizeError);
+                    sizeDisplay = '0 KB';
+                  }
+                  
+                  // Safe duration calculation
+                  let durationDisplay = null;
+                  try {
+                    if (fileDuration && !isNaN(fileDuration) && fileDuration > 0) {
+                      const minutes = Math.floor(fileDuration / 60);
+                      const seconds = Math.floor(fileDuration % 60);
+                      durationDisplay = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    }
+                  } catch (durationError) {
+                    console.warn('⚠️ RadioPlayer: Error calculating duration:', durationError);
+                    durationDisplay = null;
+                  }
+                  
+                  return (
+                    <>
+                      <p>{typeDisplay} • {sizeDisplay}</p>
+                      {durationDisplay && (
+                        <p>Duration: {durationDisplay}</p>
+                      )}
+                    </>
+                  );
+                  
+                } catch (error) {
+                  console.error('🚨 RadioPlayer: Critical error in audio info display:', error);
+                  // Return safe fallback UI
+                  return (
+                    <>
+                      <p>AUDIO • 0 KB</p>
+                      <p className="text-red-400 text-xs">⚠️ Error displaying audio info</p>
+                    </>
+                  );
+                }
+              })()}
             </div>
           )}
           {audioMode === 'stream' && metadata.artist && (
