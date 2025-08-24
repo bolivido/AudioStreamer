@@ -1,231 +1,112 @@
-# Audio Streamer
+# 🎵 AudioStreamer
 
-A minimal, fast, and responsive single-page web application for streaming online radio stations. Built with React and Tailwind CSS, designed for easy integration into mobile apps via WebView.
+A professional radio station powered by **AzuraCast** - the modern, self-hosted radio station management system.
 
-## Features
+## 🚀 **What is AudioStreamer?**
 
-- 🎵 **Stream Online Radio**: Support for Icecast, Shoutcast, and HTTP Live Streaming (HLS)
-- 🎵 **Upload Your Own Audio**: Drag & drop or browse to upload MP3, WAV, AAC, OGG, FLAC files
-- ▶️ **Play/Pause Controls**: Simple and intuitive audio controls
-- 📱 **Responsive Design**: Works perfectly on desktop and mobile devices
-- 🔄 **Auto-Reconnection**: Automatically reconnects if the stream drops
-- 🎚️ **Volume Control**: Adjustable volume with visual feedback
-- 📊 **Connection Status**: Real-time connection status indicators
-- 🔧 **Configurable Streams**: Easy to add custom radio stream URLs
-- 🚀 **Fast & Lightweight**: Optimized for performance and minimal resource usage
-- 💾 **Local Storage**: Your audio files stay in your browser - no server uploads needed
+AudioStreamer is a **professional radio station** that runs on Railway, powered by AzuraCast. It provides:
 
-## Tech Stack
+- **🎵 Music Library Management** - Upload, organize, and manage your music
+- **📻 Live Streaming** - Multiple streaming backends (Icecast, Shoutcast)
+- **📅 Playlist Scheduling** - Auto-play music with custom schedules
+- **👥 DJ Management** - Multiple user accounts and permissions
+- **📊 Analytics** - Listener statistics and performance metrics
+- **🌐 Web Interface** - Easy-to-use management dashboard
 
-- **Frontend**: React 18 with Hooks
-- **Styling**: Tailwind CSS for responsive design
-- **Audio**: HTML5 Audio API with custom controls
-- **Deployment**: Railway hosting platform
-- **CI/CD**: GitHub Actions for automated deployment
+## ✨ **Features**
 
-## Quick Start
+### **🎯 Professional Radio Station**
+- **Built on AzuraCast** - Industry-standard radio management
+- **Web-based interface** - Manage everything from your browser
+- **Multiple streaming formats** - MP3, AAC, OGG support
+- **Real-time metadata** - Song information and artist details
 
-### Prerequisites
+### **🚀 Railway Deployment**
+- **Automatic deployment** - No complex setup required
+- **Scalable hosting** - Railway handles the infrastructure
+- **Professional reliability** - 99.9% uptime guarantee
 
-- Node.js 18+ 
-- npm or yarn
+### **📱 Easy Management**
+- **Drag & drop uploads** - Add music easily
+- **Playlist creation** - Organize your music library
+- **Scheduling tools** - Set up auto-play schedules
+- **User management** - Multiple DJ accounts
 
-### Installation
+## 🚀 **Quick Start**
 
-1. Clone the repository:
-```bash
-git clone <your-repo-url>
-cd audio-streamer
-```
+### **1. Automatic Deployment**
+Railway will automatically deploy your AzuraCast radio station using the official Docker image.
 
-2. Install dependencies:
-```bash
-npm install
-```
+### **2. Access Your Station**
+- **Web Interface**: `https://your-app.railway.app`
+- **Stream URL**: `https://your-app.railway.app:8000/`
+- **Admin Login**: `admin@audiostreamer.com` / `admin123`
 
-3. Start the development server:
-```bash
-npm start
-```
+### **3. Setup Your Station**
+1. Complete the AzuraCast setup wizard
+2. Create your radio station
+3. Upload your music files
+4. Create playlists and schedules
+5. Start broadcasting!
 
-4. Open [http://localhost:3000](http://localhost:3000) in your browser.
+## 🔧 **Configuration**
 
-### Building for Production
+### **Environment Variables**
+All configuration is handled through Railway environment variables:
+- **Station Name**: AudioStreamer Radio
+- **Admin Email**: admin@audiostreamer.com
+- **Stream Port**: 8000
+- **Web Port**: 80
 
-```bash
-npm run build
-```
+### **Ports**
+- **80**: Web interface (HTTP)
+- **443**: Web interface (HTTPS)
+- **8000**: Main stream
+- **8001-8005**: Additional streams
 
-The build artifacts will be stored in the `build/` directory.
-
-## Configuration
-
-### Stream URLs
-
-The app comes with demo stream URLs that you can replace with your actual radio streams:
-
-```javascript
-// In src/App.js
-const defaultStreams = [
-  { name: 'Your Radio Station', url: 'https://your-stream-url.com/stream' },
-  { name: 'Another Station', url: 'https://another-stream.com/audio' },
-];
-```
-
-### Supported Stream Formats
-
-- **Icecast**: `http://icecast.example.com:8000/stream`
-- **Shoutcast**: `http://shoutcast.example.com:8000/`
-- **HTTP Live Streaming (HLS)**: `https://example.com/playlist.m3u8`
-- **Direct MP3/AAC**: `https://example.com/stream.mp3`
-
-### Audio Upload Support
-
-- **Formats**: MP3, WAV, AAC, OGG, FLAC
-- **Features**: Drag & drop, file browser, duration detection, file size display
-- **Storage**: Local browser storage - files never leave your device
-- **Usage**: Perfect for personal music, podcasts, or custom audio content
-
-## Deployment
-
-### Railway Deployment
-
-1. **Install Railway CLI**:
-```bash
-npm install -g @railway/cli
-```
-
-2. **Login to Railway**:
-```bash
-railway login
-```
-
-3. **Initialize Railway project**:
-```bash
-railway init
-```
-
-4. **Deploy**:
-```bash
-railway up
-```
-
-### GitHub Actions (Automated)
-
-The repository includes a GitHub Actions workflow that automatically deploys to Railway on push to main/master branch.
-
-**Required Secrets**:
-- `RAILWAY_TOKEN`: Your Railway authentication token
-- `RAILWAY_SERVICE`: Your Railway service ID
-
-## Integration with Bib Kreyòl App
-
-This web app is designed to be embedded in the Bib Kreyòl mobile app via WebView:
-
-### iOS (WKWebView)
-```swift
-import WebKit
-
-let webView = WKWebView()
-let url = URL(string: "https://your-railway-app.railway.app")!
-let request = URLRequest(url: url)
-webView.load(request)
-```
-
-### Android (WebView)
-```kotlin
-import android.webkit.WebView
-
-val webView = WebView(this)
-webView.loadUrl("https://your-railway-app.railway.app")
-```
-
-## Performance & Scaling
-
-### Bandwidth Analysis
-
-For **10,000 weekly visitors**:
-
-- **App Size**: ~500KB (gzipped)
-- **Per Visit**: ~1-2MB (initial load + minimal updates)
-- **Weekly Bandwidth**: ~10-20GB
-- **Railway Free Tier**: 100GB/month ✅ **Sufficient**
-
-### Optimization Features
-
-- Lazy loading of components
-- Minimal bundle size with React 18
-- Efficient audio streaming (no local storage)
-- Responsive images and CSS
-- Service Worker ready for offline support
-
-## Browser Support
-
-- Chrome 90+
-- Firefox 88+
-- Safari 14+
-- Edge 90+
-- Mobile browsers (iOS Safari, Chrome Mobile)
-
-## Development
-
-### Project Structure
+## 📁 **Project Structure**
 
 ```
-src/
-├── components/
-│   ├── RadioPlayer.js      # Main audio player component
-│   └── StreamConfig.js     # Stream selection interface
-├── App.js                  # Main application component
-├── index.js                # React entry point
-└── index.css               # Tailwind CSS styles
+AudioStreamer/
+├── Dockerfile              # AzuraCast Docker image
+├── railway.json           # Railway deployment config
+├── azuracast.env         # Environment variables
+├── AZURACAST_SETUP.md    # Detailed setup guide
+├── config.js             # App configuration
+├── src/                  # React app source
+└── content/              # Sample audio content
 ```
 
-### Available Scripts
+## 🎵 **Why AzuraCast?**
 
-- `npm start` - Start development server
-- `npm run build` - Build for production
-- `npm test` - Run tests
-- `npm run eject` - Eject from Create React App
+✅ **Professional Features** - Built for radio stations  
+✅ **Easy Management** - Web-based interface  
+✅ **Reliable Deployment** - Official Docker images  
+✅ **Rich Functionality** - More than just streaming  
+✅ **Active Development** - Regular updates and support  
 
-## Troubleshooting
+## 🚀 **Deployment**
 
-### Common Issues
+This project automatically deploys to Railway using:
+- **Official AzuraCast Docker image**
+- **Professional radio station setup**
+- **Automatic configuration**
+- **Zero manual setup required**
 
-1. **Stream won't play**: Check if the stream URL is accessible and supports CORS
-2. **Audio quality issues**: Ensure the stream source provides adequate bitrate
-3. **Connection drops**: The app automatically attempts reconnection up to 5 times
+## 📚 **Documentation**
 
-### Debug Mode
+- **AZURACAST_SETUP.md** - Complete setup and management guide
+- **Railway Dashboard** - Monitor deployment and logs
+- **AzuraCast Docs** - Official documentation and tutorials
 
-Enable debug logging in the browser console:
-```javascript
-localStorage.setItem('debug', 'true')
-```
+## 🤝 **Support**
 
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests if applicable
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support or questions:
-- Create an issue in this repository
-- Check the Railway documentation for deployment issues
-- Review the React and Tailwind CSS documentation
+- **Railway Logs** - Check deployment status
+- **AzuraCast Community** - Active user community
+- **GitHub Issues** - Report bugs or request features
 
 ---
 
-**Built with ❤️ for the Bib Kreyòl community**
+**Your professional radio station is just a deployment away! 🎵☁️**
 
-# Auto-deploy test - Thu Aug 21 20:01:58 EDT 2025
-
-# Auto-deploy test - Thu Aug 21 20:05:08 EDT 2025
+Built with ❤️ using [AzuraCast](https://azuracast.com/) and [Railway](https://railway.app/)

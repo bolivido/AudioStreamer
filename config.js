@@ -1,15 +1,15 @@
-// AudioStreamer Configuration - Shoutcast Focused
+// AudioStreamer Configuration - AzuraCast Focused
 export const config = {
   // App settings
   appName: 'AudioStreamer',
-  appDescription: 'Stream live Shoutcast radio stations with real-time metadata',
+  appDescription: 'Professional radio station powered by AzuraCast',
   
-  // Shoutcast radio stream URLs
+  // AzuraCast radio stream URLs
   defaultStreams: [
     { 
       name: '🎵 Radio Paradise', 
       url: 'https://stream.radioparadise.com/aac-64',
-      description: 'Eclectic mix with rich Shoutcast metadata'
+      description: 'Eclectic mix with rich metadata'
     },
     { 
       name: '📻 SomaFM Groove Salad', 
@@ -37,9 +37,9 @@ export const config = {
       description: 'French eclectic music station'
     },
     { 
-      name: '🚀 Railway Shoutcast Server', 
-      url: 'https://your-railway-app.railway.app:8000/',
-      description: 'Your custom Shoutcast server for testing metadata parsing'
+      name: '🚀 AzuraCast Radio Station', 
+      url: 'https://your-azuracast-app.railway.app:8000/',
+      description: 'Your professional AzuraCast radio station'
     }
   ],
   
@@ -67,11 +67,11 @@ export const config = {
   // Supported stream formats
   supportedFormats: ['mp3', 'aac', 'ogg'],
   
-  // Shoutcast specific settings
-  shoutcast: {
-    metadataEnabled: true,
-    icyHeaders: true,
-    currentSongEndpoint: true,
-    userAgent: 'AudioStreamer/1.0'
+  // AzuraCast specific settings
+  azuracast: {
+    webInterface: 'https://your-azuracast-app.railway.app',
+    streamUrl: 'https://your-azuracast-app.railway.app:8000/',
+    adminEmail: 'admin@audiostreamer.com',
+    adminPassword: 'admin123'
   }
 };
