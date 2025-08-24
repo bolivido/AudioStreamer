@@ -1,4 +1,4 @@
-# 🚀 Quick Start: Railway Shoutcast Server
+# 🚀 Quick Start: Railway Icecast2 Server
 
 ## ⚡ **5-Minute Setup**
 
@@ -17,18 +17,18 @@ cp your-song.mp3 content/
 ### **3. Start Broadcasting**
 ```bash
 # Using FFmpeg (replace with your file)
-ffmpeg -re -i "content/your-song.mp3" -acodec libmp3lame -ab 128k -f mp3 http://localhost:8000/changeme
+ffmpeg -re -i "content/your-song.mp3" -acodec libmp3lame -ab 128k -f mp3 icecast://source:changeme@localhost:8000/stream
 ```
 
 ### **4. Test in AudioStreamer**
 - Open your app
-- Select "🚀 Railway Shoutcast Server"
+- Select "🚀 Railway Icecast2 Server"
 - Watch real metadata appear!
 
 ## 🔧 **Configuration Files Created**
 
-- **`Dockerfile`** - Container setup
-- **`sc_serv.conf`** - Shoutcast configuration
+- **`Dockerfile`** - Container setup with Icecast2
+- **`icecast.xml`** - Icecast2 configuration
 - **`railway.json`** - Railway deployment config
 - **`deploy-shoutcast.sh`** - Deployment script
 
@@ -36,16 +36,17 @@ ffmpeg -re -i "content/your-song.mp3" -acodec libmp3lame -ab 128k -f mp3 http://
 
 - **Stream Port**: 8000
 - **Web Interface**: 8001
-- **Admin Password**: admin123
-- **Stream Password**: changeme
-- **Station Name**: AudioStreamer Test Radio
+- **Source Password**: changeme
+- **Relay Password**: changeme
+- **Station Name**: AudioStreamer Radio
+- **Mount Point**: /stream
 
 ## 🎵 **Expected Results**
 
 ✅ **Real song titles** in the player  
 ✅ **Actual artist names** displayed  
 ✅ **Live metadata updates** every 10 seconds  
-✅ **Console logs** showing Shoutcast parsing  
+✅ **Console logs** showing Icecast2 parsing  
 ✅ **Professional radio experience**  
 
 ## 🚨 **Troubleshooting**
@@ -56,22 +57,22 @@ ffmpeg -re -i "content/your-song.mp3" -acodec libmp3lame -ab 128k -f mp3 http://
 - Check configuration syntax
 
 ### **No Metadata:**
-- Ensure `icy=1` in config
+- Ensure Icecast2 is running
 - Check audio files have ID3 tags
 - Verify broadcasting is active
 
 ### **Connection Issues:**
 - Check Railway URL is correct
 - Verify ports are exposed
-- Test with curl: `curl -I your-url:8000/`
+- Test with curl: `curl -I your-url:8000/stream`
 
 ## 🔄 **Next Steps**
 
-1. **Customize station info** in `sc_serv.conf`
+1. **Customize station info** in `icecast.xml`
 2. **Add more audio content** to `content/` directory
 3. **Test different metadata formats**
 4. **Scale up for production use**
 
 ---
 
-**Your Railway Shoutcast server is ready! 🎵☁️**
+**Your Railway Icecast2 server is ready! 🎵☁️**

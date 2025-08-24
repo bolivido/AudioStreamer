@@ -1,16 +1,16 @@
 {
   "services": [
     {
-      "name": "shoutcast-server",
+      "name": "icecast2-server",
       "type": "docker",
       "ports": [8000, 8001],
       "environment": {
-        "SHOUTCAST_PORT": "8000",
+        "ICECAST_PORT": "8000",
         "WEB_PORT": "8001",
-        "ADMIN_PASSWORD": "admin123",
-        "STREAM_PASSWORD": "changeme",
-        "STATION_NAME": "AudioStreamer Test Radio",
-        "STATION_GENRE": "Test",
+        "SOURCE_PASSWORD": "changeme",
+        "RELAY_PASSWORD": "changeme",
+        "STATION_NAME": "AudioStreamer Radio",
+        "STATION_GENRE": "Custom",
         "AUTO_PLAY": "true",
         "CONTENT_DIR": "/opt/shoutcast/content"
       },
@@ -25,12 +25,12 @@
     }
   ],
   "variables": {
-    "SHOUTCAST_PORT": "8000",
+    "ICECAST_PORT": "8000",
     "WEB_PORT": "8001",
-    "ADMIN_PASSWORD": "admin123",
-    "STREAM_PASSWORD": "changeme",
-    "STATION_NAME": "AudioStreamer Test Radio",
-    "STATION_GENRE": "Test",
+    "SOURCE_PASSWORD": "changeme",
+    "RELAY_PASSWORD": "changeme",
+    "STATION_NAME": "AudioStreamer Radio",
+    "STATION_GENRE": "Custom",
     "AUTO_PLAY": "true",
     "CONTENT_DIR": "/opt/shoutcast/content"
   }

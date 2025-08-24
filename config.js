@@ -37,9 +37,9 @@ export const config = {
       description: 'French eclectic music station'
     },
     { 
-      name: '🚀 Railway Shoutcast Server', 
-      url: 'https://your-railway-app.railway.app:8000/;',
-      description: 'Your custom Shoutcast server for testing metadata parsing'
+      name: '🚀 Railway Icecast2 Server', 
+      url: 'https://your-railway-app.railway.app:8000/stream',
+      description: 'Your custom Icecast2 server for testing metadata parsing'
     }
   ],
   
