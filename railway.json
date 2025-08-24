@@ -1,37 +1,50 @@
 {
   "services": [
     {
-      "name": "shoutcast-server",
+      "name": "azuracast-radio",
       "type": "docker",
-      "ports": [8000, 8001],
+      "ports": [80, 443, 8000, 8001, 8002, 8003, 8004, 8005],
       "environment": {
-        "SHOUTCAST_PORT": "8000",
-        "WEB_PORT": "8001",
-        "ADMIN_PASSWORD": "admin123",
-        "STREAM_PASSWORD": "changeme",
-        "STATION_NAME": "AudioStreamer Radio",
-        "STATION_GENRE": "Custom",
-        "AUTO_PLAY": "true",
-        "CONTENT_DIR": "/opt/shoutcast/content"
+        "AZURACAST_APP_ENV": "production",
+        "AZURACAST_DB_HOST": "localhost",
+        "AZURACAST_DB_PORT": "3306",
+        "AZURACAST_DB_USERNAME": "azuracast",
+        "AZURACAST_DB_PASSWORD": "azuracast",
+        "AZURACAST_DB_DATABASE": "azuracast",
+        "AZURACAST_REDIS_HOST": "localhost",
+        "AZURACAST_REDIS_PORT": "6379",
+        "AZURACAST_STATION_NAME": "AudioStreamer Radio",
+        "AZURACAST_STATION_DESCRIPTION": "Custom radio station with metadata",
+        "AZURACAST_STATION_GENRE": "Custom",
+        "AZURACAST_STREAM_PORT": "8000",
+        "AZURACAST_WEB_PORT": "80",
+        "AZURACAST_ADMIN_EMAIL": "admin@audiostreamer.com",
+        "AZURACAST_ADMIN_PASSWORD": "admin123"
       },
       "healthcheck": {
         "path": "/",
-        "port": 8001,
+        "port": 80,
         "interval": "30s",
         "timeout": "10s",
         "retries": 3
-      },
-      "startCommand": "./start-auto-play.sh"
+      }
     }
   ],
   "variables": {
-    "SHOUTCAST_PORT": "8000",
-    "WEB_PORT": "8001",
-    "ADMIN_PASSWORD": "admin123",
-    "STREAM_PASSWORD": "changeme",
-    "STATION_NAME": "AudioStreamer Radio",
-    "STATION_GENRE": "Custom",
-    "AUTO_PLAY": "true",
-    "CONTENT_DIR": "/opt/shoutcast/content"
+    "AZURACAST_APP_ENV": "production",
+    "AZURACAST_DB_HOST": "localhost",
+    "AZURACAST_DB_PORT": "3306",
+    "AZURACAST_DB_USERNAME": "azuracast",
+    "AZURACAST_DB_PASSWORD": "azuracast",
+    "AZURACAST_DB_DATABASE": "azuracast",
+    "AZURACAST_REDIS_HOST": "localhost",
+    "AZURACAST_REDIS_PORT": "6379",
+    "AZURACAST_STATION_NAME": "AudioStreamer Radio",
+    "AZURACAST_STATION_DESCRIPTION": "Custom radio station with metadata",
+    "AZURACAST_STATION_GENRE": "Custom",
+    "AZURACAST_STREAM_PORT": "8000",
+    "AZURACAST_WEB_PORT": "80",
+    "AZURACAST_ADMIN_EMAIL": "admin@audiostreamer.com",
+    "AZURACAST_ADMIN_PASSWORD": "admin123"
   }
 }
