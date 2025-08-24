@@ -27,8 +27,9 @@ COPY icecast.xml /opt/shoutcast/icecast.xml
 COPY start-auto-play.sh /opt/shoutcast/
 RUN chmod +x /opt/shoutcast/start-auto-play.sh
 
-# Create directories for content and logs
-RUN mkdir -p /opt/shoutcast/content /opt/shoutcast/logs
+# Create directories for content and logs with proper permissions
+RUN mkdir -p /opt/shoutcast/content /opt/shoutcast/logs && \
+    chmod 755 /opt/shoutcast/logs
 
 # Copy sample audio files (if any)
 COPY content/ /opt/shoutcast/content/

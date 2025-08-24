@@ -18,7 +18,7 @@
     <web-port>8001</web-port>
     <web-hostname>0.0.0.0</web-hostname>
     
-    <!-- Logging -->
+    <!-- Logging - use writable paths -->
     <logdir>/opt/shoutcast/logs</logdir>
     <logfile>icecast.log</logfile>
     <loglevel>4</loglevel>
@@ -41,7 +41,7 @@
         <dump-file>/opt/shoutcast/logs/dump-1.ogg</dump-file>
         <fallback-mount>/silence.ogg</fallback-mount>
         <fallback-override>1</fallback-override>
-        <fallback-when-full>1</fallback-when-full>
+        <fallback-when-full>1</fallback-override>
         <intro>/opt/shoutcast/content/intro.ogg</intro>
         <hidden>0</hidden>
         <public>1</public>

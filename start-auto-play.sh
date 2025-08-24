@@ -22,12 +22,20 @@ if [ ! -d "$CONTENT_DIR" ]; then
     mkdir -p "$CONTENT_DIR"
 fi
 
-# Check if logs directory exists
+# Check if logs directory exists and has proper permissions
 LOGS_DIR="/opt/shoutcast/logs"
 if [ ! -d "$LOGS_DIR" ]; then
     echo "📁 Creating logs directory..."
     mkdir -p "$LOGS_DIR"
 fi
+
+# Ensure logs directory is writable
+if [ ! -w "$LOGS_DIR" ]; then
+    echo "⚠️  Logs directory not writable, fixing permissions..."
+    chmod 755 "$LOGS_DIR"
+fi
+
+echo "✅ Logs directory ready: $LOGS_DIR"
 
 # Start Icecast2 server in background
 echo "🚀 Starting Icecast2 server..."
