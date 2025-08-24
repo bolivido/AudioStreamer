@@ -45,6 +45,11 @@ export const config = {
       name: 'Groove Salad Classic', 
       url: 'https://ice1.somafm.com/groovesalad-64-mp3',
       description: 'Classic ambient - metadata rich'
+    },
+    { 
+      name: '🔄 My Test Shoutcast Server', 
+      url: 'http://localhost:8000/;',
+      description: 'Local Shoutcast server for testing metadata parsing'
     }
   ],
   
