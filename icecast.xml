@@ -2,9 +2,13 @@
     <location>AudioStreamer</location>
     <admin>admin@localhost</admin>
     
-    <!-- Change this to a secure password -->
-    <source-password>changeme</source-password>
-    <relay-password>changeme</relay-password>
+    <!-- Authentication section -->
+    <authentication>
+        <source-password>changeme</source-password>
+        <relay-password>changeme</relay-password>
+        <admin-user>admin</admin-user>
+        <admin-password>admin123</admin-password>
+    </authentication>
     
     <!-- Hostname and port settings -->
     <hostname>0.0.0.0</hostname>
@@ -22,6 +26,10 @@
     <!-- Security -->
     <security>
         <chroot>0</chroot>
+        <changeowner>
+            <user>icecast</user>
+            <group>icecast</group>
+        </changeowner>
     </security>
     
     <!-- Mount points -->

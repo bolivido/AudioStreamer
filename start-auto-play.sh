@@ -7,6 +7,7 @@ echo "🎵 Railway Icecast2 Auto-Start Script"
 echo "====================================="
 echo "⏰ Started at: $(date)"
 echo "🌐 Environment: $RAILWAY_ENVIRONMENT"
+echo "👤 Running as user: $(whoami)"
 echo ""
 
 # Start Icecast2 server in background
@@ -47,7 +48,7 @@ fi
 echo "✅ Found $AUDIO_COUNT audio files"
 echo "🎵 Starting continuous stream..."
 
-# Create playlist file
+# Create playlist file in a writable location
 PLAYLIST_FILE="/tmp/auto-playlist.txt"
 echo "📝 Creating playlist..."
 
@@ -68,7 +69,7 @@ echo "🔑 Password: changeme"
 echo ""
 
 # Log file for debugging
-LOG_FILE="/opt/shoutcast/logs/auto-play.log"
+LOG_FILE="/tmp/auto-play.log"
 
 # Start continuous streaming to Icecast2
 while true; do
