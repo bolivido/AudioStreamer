@@ -281,23 +281,110 @@ const RadioPlayer = ({
     // Poll for metadata every 10 seconds
     metadataIntervalRef.current = setInterval(async () => {
       try {
-        // Try to fetch metadata from the stream
-        // This is a simplified approach - real implementation might need
-        // to parse Icecast/Shoutcast metadata
-        if (audioRef.current && !audioRef.current.paused) {
-          // For demo purposes, we'll simulate metadata updates
-          const mockMetadata = {
-            title: `Track ${Math.floor(Math.random() * 100)}`,
-            artist: 'Radio Station',
-            album: 'Live Stream'
-          };
-          setMetadata(mockMetadata);
-          onNowPlayingChange(mockMetadata.title);
+        if (audioRef.current && !audioRef.current.paused && streamUrl) {
+          // Try to fetch real metadata from Shoutcast/Icecast streams
+          await fetchShoutcastMetadata(streamUrl);
         }
       } catch (err) {
         console.warn('Metadata fetch failed:', err);
       }
     }, 10000);
+  };
+
+  const fetchShoutcastMetadata = async (streamUrl) => {
+    try {
+      // Create a new request to get metadata headers
+      const response = await fetch(streamUrl, {
+        method: 'HEAD',
+        headers: {
+          'Icy-MetaData': '1', // Request metadata from Shoutcast
+          'User-Agent': 'AudioStreamer/1.0'
+        }
+      });
+
+      if (response.ok) {
+        // Extract Shoutcast metadata headers
+        const icyName = response.headers.get('icy-name');
+        const icyGenre = response.headers.get('icy-genre');
+        const icyUrl = response.headers.get('icy-url');
+        const icyBitrate = response.headers.get('icy-br');
+        const icyDescription = response.headers.get('icy-description');
+
+        // Try to get current track info if available
+        let currentTrack = null;
+        try {
+          // Some Shoutcast servers support current track info
+          const trackResponse = await fetch(`${streamUrl.replace('/;', '')}/currentsong`, {
+            headers: { 'User-Agent': 'AudioStreamer/1.0' }
+          });
+          if (trackResponse.ok) {
+            const trackText = await trackResponse.text();
+            if (trackText && trackText.trim() && !trackText.includes('<!DOCTYPE')) {
+              currentTrack = trackText.trim();
+            }
+          }
+        } catch (trackError) {
+          console.log('Track info not available:', trackError.message);
+        }
+
+        // Parse track info if available
+        let title = 'Live Stream';
+        let artist = 'Radio Station';
+        let album = '';
+
+        if (currentTrack) {
+          // Parse common track formats: "Artist - Title" or "Title - Artist"
+          if (currentTrack.includes(' - ')) {
+            const parts = currentTrack.split(' - ');
+            if (parts.length >= 2) {
+              // Try to determine which is artist vs title
+              if (parts[0].length < parts[1].length) {
+                // First part is likely artist
+                artist = parts[0].trim();
+                title = parts[1].trim();
+              } else {
+                // First part is likely title
+                title = parts[0].trim();
+                artist = parts[1].trim();
+              }
+            }
+          } else {
+            title = currentTrack;
+          }
+        }
+
+        // Create metadata object
+        const realMetadata = {
+          title: title,
+          artist: artist,
+          album: album,
+          station: icyName || 'Unknown Station',
+          genre: icyGenre || 'Unknown Genre',
+          url: icyUrl || '',
+          bitrate: icyBitrate ? `${icyBitrate}kbps` : 'Unknown',
+          description: icyDescription || ''
+        };
+
+        console.log('🎵 Real Shoutcast metadata:', realMetadata);
+        setMetadata(realMetadata);
+        onNowPlayingChange(realMetadata.title);
+
+        // Update now playing with station info if no track info
+        if (!currentTrack && icyName) {
+          onNowPlayingChange(`${icyName} - Live`);
+        }
+      }
+    } catch (error) {
+      console.log('📻 Shoutcast metadata fetch failed, using fallback:', error.message);
+      // Fallback to basic metadata
+      const fallbackMetadata = {
+        title: 'Live Stream',
+        artist: 'Radio Station',
+        album: 'Live Broadcast'
+      };
+      setMetadata(fallbackMetadata);
+      onNowPlayingChange('Live Radio Stream');
+    }
   };
 
   const stopMetadataPolling = () => {
@@ -415,11 +502,20 @@ const RadioPlayer = ({
               })()}
             </div>
           )}
-          {audioMode === 'stream' && metadata.artist && (
-            <p className="text-sm text-gray-400 mt-1">
-              {metadata.artist} • {metadata.album}
-            </p>
-          )}
+                  {audioMode === 'stream' && (
+          <div className="text-sm text-gray-400 mt-1 space-y-1">
+            {metadata.artist && metadata.artist !== 'Radio Station' && (
+              <p>{metadata.artist} • {metadata.album || 'Live Stream'}</p>
+            )}
+            {metadata.station && metadata.station !== 'Unknown Station' && (
+              <p className="text-xs text-blue-400">
+                📻 {metadata.station}
+                {metadata.genre && metadata.genre !== 'Unknown Genre' && ` • ${metadata.genre}`}
+                {metadata.bitrate && metadata.bitrate !== 'Unknown' && ` • ${metadata.bitrate}`}
+              </p>
+            )}
+          </div>
+        )}
         </div>
 
       {/* Audio Element */}

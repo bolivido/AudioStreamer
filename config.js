@@ -35,6 +35,16 @@ export const config = {
       name: 'FIP Radio', 
       url: 'https://icecast.radiofrance.fr/fip-midfi.mp3',
       description: 'French eclectic music station'
+    },
+    { 
+      name: 'DI.FM Chillout', 
+      url: 'https://ice1.somafm.com/dronezone-64-mp3',
+      description: 'Chillout music - Shoutcast compatible'
+    },
+    { 
+      name: 'Groove Salad Classic', 
+      url: 'https://ice1.somafm.com/groovesalad-64-mp3',
+      description: 'Classic ambient - metadata rich'
     }
   ],
   
