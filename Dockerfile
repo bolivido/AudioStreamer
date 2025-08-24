@@ -18,6 +18,10 @@ RUN apt-get update && apt-get install -y \
 # Create shoutcast directory
 WORKDIR /opt/shoutcast
 
+# Create icecast user and group properly
+RUN groupadd -r icecast 2>/dev/null || true && \
+    useradd -r -g icecast -d /opt/shoutcast -s /bin/bash icecast 2>/dev/null || true
+
 # Copy configuration files
 COPY icecast.xml /opt/shoutcast/icecast.xml
 COPY start-auto-play.sh /opt/shoutcast/
@@ -29,8 +33,8 @@ RUN mkdir -p /opt/shoutcast/content /opt/shoutcast/logs
 # Copy sample audio files (if any)
 COPY content/ /opt/shoutcast/content/
 
-# Set proper ownership (use existing icecast user)
-RUN chown -R icecast:icecast /opt/shoutcast 2>/dev/null || true
+# Set proper ownership
+RUN chown -R icecast:icecast /opt/shoutcast
 
 # Expose ports
 EXPOSE 8000 8001
@@ -39,5 +43,6 @@ EXPOSE 8000 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
-# Use the startup script as the main command
+# Switch to icecast user and use the startup script
+USER icecast
 CMD ["/opt/shoutcast/start-auto-play.sh"]

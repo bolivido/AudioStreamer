@@ -14,12 +14,6 @@ echo "📁 Current directory: $(pwd)"
 echo "🔍 Checking system..."
 echo ""
 
-# Check if we're running as icecast user
-if [ "$(whoami)" != "icecast" ]; then
-    echo "⚠️  Warning: Not running as icecast user, switching..."
-    exec su -c "$0" icecast
-fi
-
 # Check if content directory exists
 CONTENT_DIR="/opt/shoutcast/content"
 if [ ! -d "$CONTENT_DIR" ]; then
