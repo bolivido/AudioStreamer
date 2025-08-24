@@ -41,7 +41,7 @@
         <dump-file>/opt/shoutcast/logs/dump-1.ogg</dump-file>
         <fallback-mount>/silence.ogg</fallback-mount>
         <fallback-override>1</fallback-override>
-        <fallback-when-full>1</fallback-override>
+        <fallback-when-full>1</fallback-when-full>
         <intro>/opt/shoutcast/content/intro.ogg</intro>
         <hidden>0</hidden>
         <public>1</public>
