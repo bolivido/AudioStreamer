@@ -3,12 +3,37 @@
 # 🚀 Railway Auto-Start Script for Continuous Icecast2 Streaming
 # This script runs automatically when Railway starts the container
 
+set -e  # Exit on any error
+
 echo "🎵 Railway Icecast2 Auto-Start Script"
 echo "====================================="
 echo "⏰ Started at: $(date)"
 echo "🌐 Environment: $RAILWAY_ENVIRONMENT"
 echo "👤 Running as user: $(whoami)"
+echo "📁 Current directory: $(pwd)"
+echo "🔍 Checking system..."
 echo ""
+
+# Check if we're running as icecast user
+if [ "$(whoami)" != "icecast" ]; then
+    echo "⚠️  Warning: Not running as icecast user, switching..."
+    exec su -c "$0" icecast
+fi
+
+# Check if content directory exists
+CONTENT_DIR="/opt/shoutcast/content"
+if [ ! -d "$CONTENT_DIR" ]; then
+    echo "❌ Content directory not found: $CONTENT_DIR"
+    echo "📁 Creating content directory..."
+    mkdir -p "$CONTENT_DIR"
+fi
+
+# Check if logs directory exists
+LOGS_DIR="/opt/shoutcast/logs"
+if [ ! -d "$LOGS_DIR" ]; then
+    echo "📁 Creating logs directory..."
+    mkdir -p "$LOGS_DIR"
+fi
 
 # Start Icecast2 server in background
 echo "🚀 Starting Icecast2 server..."
@@ -17,22 +42,23 @@ ICECAST_PID=$!
 
 # Wait for Icecast2 server to be ready
 echo "⏳ Waiting for Icecast2 server to start..."
-sleep 15
+sleep 10
 
 # Check if Icecast2 server is running
 if ! kill -0 $ICECAST_PID 2>/dev/null; then
     echo "❌ Icecast2 server failed to start"
-    exit 1
+    echo "📋 Checking Icecast2 logs..."
+    if [ -f "$LOGS_DIR/icecast.log" ]; then
+        tail -20 "$LOGS_DIR/icecast.log"
+    fi
+    echo "🔄 Starting fallback loop..."
+    while true; do 
+        echo "[$(date)] Container alive, waiting for manual intervention..."
+        sleep 60
+    done
 fi
 
 echo "✅ Icecast2 server started (PID: $ICECAST_PID)"
-
-# Check if content directory exists and has files
-CONTENT_DIR="/opt/shoutcast/content"
-if [ ! -d "$CONTENT_DIR" ]; then
-    echo "❌ Content directory not found: $CONTENT_DIR"
-    exit 1
-fi
 
 # Count audio files
 AUDIO_COUNT=$(find "$CONTENT_DIR" -name "*.mp3" -o -name "*.aac" -o -name "*.ogg" 2>/dev/null | wc -l)
@@ -41,8 +67,14 @@ if [ "$AUDIO_COUNT" -eq 0 ]; then
     echo "❌ No audio files found in $CONTENT_DIR"
     echo "💡 Add some MP3 files to the content directory"
     echo "🔄 Icecast2 server will run without content"
+    echo "📡 Stream URL: http://localhost:8000/stream"
+    echo "🌐 Web Interface: http://localhost:8001/"
+    echo ""
     # Keep the script running to maintain the container
-    while true; do sleep 60; done
+    while true; do 
+        echo "[$(date)] Container alive, waiting for content..."
+        sleep 60
+    done
 fi
 
 echo "✅ Found $AUDIO_COUNT audio files"
@@ -65,6 +97,7 @@ echo "✅ Playlist created with $(wc -l < "$PLAYLIST_FILE") entries"
 echo "🚀 Starting infinite loop playback..."
 echo "🔄 Songs will play continuously until stopped"
 echo "📡 Stream URL: http://localhost:8000/stream"
+echo "🌐 Web Interface: http://localhost:8001/"
 echo "🔑 Password: changeme"
 echo ""
 

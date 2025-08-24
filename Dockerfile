@@ -39,6 +39,5 @@ EXPOSE 8000 8001
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8001/ || exit 1
 
-# Switch to icecast user and start server
-USER icecast
-CMD ["icecast2", "-c", "/opt/shoutcast/icecast.xml"]
+# Use the startup script as the main command
+CMD ["/opt/shoutcast/start-auto-play.sh"]
