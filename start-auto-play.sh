@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 🚀 Railway Auto-Start Script for Continuous Icecast2 Streaming
+# 🚀 Railway Auto-Start Script for Continuous Shoutcast Streaming
 # This script runs automatically when Railway starts the container
 
 set -e  # Exit on any error
 
-echo "🎵 Railway Icecast2 Auto-Start Script"
-echo "====================================="
+echo "🎵 Railway Shoutcast Auto-Start Script"
+echo "======================================"
 echo "⏰ Started at: $(date)"
 echo "🌐 Environment: $RAILWAY_ENVIRONMENT"
 echo "👤 Running as user: $(whoami)"
@@ -22,36 +22,28 @@ if [ ! -d "$CONTENT_DIR" ]; then
     mkdir -p "$CONTENT_DIR"
 fi
 
-# Check if logs directory exists and has proper permissions
+# Check if logs directory exists
 LOGS_DIR="/opt/shoutcast/logs"
 if [ ! -d "$LOGS_DIR" ]; then
     echo "📁 Creating logs directory..."
     mkdir -p "$LOGS_DIR"
 fi
 
-# Ensure logs directory is writable
-if [ ! -w "$LOGS_DIR" ]; then
-    echo "⚠️  Logs directory not writable, fixing permissions..."
-    chmod 755 "$LOGS_DIR"
-fi
+# Start Shoutcast server in background
+echo "🚀 Starting Shoutcast DNAS server..."
+./sc_serv sc_serv.conf &
+SHOUTCAST_PID=$!
 
-echo "✅ Logs directory ready: $LOGS_DIR"
+# Wait for Shoutcast server to be ready
+echo "⏳ Waiting for Shoutcast server to start..."
+sleep 15
 
-# Start Icecast2 server in background
-echo "🚀 Starting Icecast2 server..."
-icecast2 -c /opt/shoutcast/icecast.xml &
-ICECAST_PID=$!
-
-# Wait for Icecast2 server to be ready
-echo "⏳ Waiting for Icecast2 server to start..."
-sleep 10
-
-# Check if Icecast2 server is running
-if ! kill -0 $ICECAST_PID 2>/dev/null; then
-    echo "❌ Icecast2 server failed to start"
-    echo "📋 Checking Icecast2 logs..."
-    if [ -f "$LOGS_DIR/icecast.log" ]; then
-        tail -20 "$LOGS_DIR/icecast.log"
+# Check if Shoutcast server is running
+if ! kill -0 $SHOUTCAST_PID 2>/dev/null; then
+    echo "❌ Shoutcast server failed to start"
+    echo "📋 Checking Shoutcast logs..."
+    if [ -f "$LOGS_DIR/sc_serv.log" ]; then
+        tail -20 "$LOGS_DIR/sc_serv.log"
     fi
     echo "🔄 Starting fallback loop..."
     while true; do 
@@ -60,7 +52,7 @@ if ! kill -0 $ICECAST_PID 2>/dev/null; then
     done
 fi
 
-echo "✅ Icecast2 server started (PID: $ICECAST_PID)"
+echo "✅ Shoutcast server started (PID: $SHOUTCAST_PID)"
 
 # Count audio files
 AUDIO_COUNT=$(find "$CONTENT_DIR" -name "*.mp3" -o -name "*.aac" -o -name "*.ogg" 2>/dev/null | wc -l)
@@ -68,8 +60,8 @@ AUDIO_COUNT=$(find "$CONTENT_DIR" -name "*.mp3" -o -name "*.aac" -o -name "*.ogg
 if [ "$AUDIO_COUNT" -eq 0 ]; then
     echo "❌ No audio files found in $CONTENT_DIR"
     echo "💡 Add some MP3 files to the content directory"
-    echo "🔄 Icecast2 server will run without content"
-    echo "📡 Stream URL: http://localhost:8000/stream"
+    echo "🔄 Shoutcast server will run without content"
+    echo "📡 Stream URL: http://localhost:8000"
     echo "🌐 Web Interface: http://localhost:8001/"
     echo ""
     # Keep the script running to maintain the container
@@ -98,7 +90,7 @@ echo "✅ Playlist created with $(wc -l < "$PLAYLIST_FILE") entries"
 # Start infinite loop streaming
 echo "🚀 Starting infinite loop playback..."
 echo "🔄 Songs will play continuously until stopped"
-echo "📡 Stream URL: http://localhost:8000/stream"
+echo "📡 Stream URL: http://localhost:8000"
 echo "🌐 Web Interface: http://localhost:8001/"
 echo "🔑 Password: changeme"
 echo ""
@@ -106,14 +98,14 @@ echo ""
 # Log file for debugging
 LOG_FILE="/tmp/auto-play.log"
 
-# Start continuous streaming to Icecast2
+# Start continuous streaming to Shoutcast
 while true; do
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Starting new playlist cycle..." | tee -a "$LOG_FILE"
     
-    # Stream the entire playlist to Icecast2
+    # Stream the entire playlist to Shoutcast
     ffmpeg -re -f concat -safe 0 -i "$PLAYLIST_FILE" \
            -acodec libmp3lame -ab 128k -f mp3 \
-           "icecast://source:changeme@localhost:8000/stream" \
+           "http://localhost:8000/changeme" \
            2>> "$LOG_FILE"
     
     # Check if FFmpeg exited normally
