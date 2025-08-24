@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# 🚀 Railway Auto-Start Script for Continuous Shoutcast Streaming
+# 🚀 Railway Auto-Start Script for Continuous Streaming
 # This script runs automatically when Railway starts the container
 
 set -e  # Exit on any error
 
-echo "🎵 Railway Shoutcast Auto-Start Script"
-echo "======================================"
+echo "🎵 Railway AudioStreamer Auto-Start Script"
+echo "=========================================="
 echo "⏰ Started at: $(date)"
 echo "🌐 Environment: $RAILWAY_ENVIRONMENT"
 echo "👤 Running as user: $(whoami)"
@@ -29,21 +29,21 @@ if [ ! -d "$LOGS_DIR" ]; then
     mkdir -p "$LOGS_DIR"
 fi
 
-# Start Shoutcast server in background
-echo "🚀 Starting Shoutcast DNAS server..."
-./sc_serv sc_serv.conf &
-SHOUTCAST_PID=$!
+# Start streaming server in background
+echo "🚀 Starting streaming server..."
+icecast2 -c /opt/shoutcast/icecast.xml &
+SERVER_PID=$!
 
-# Wait for Shoutcast server to be ready
-echo "⏳ Waiting for Shoutcast server to start..."
+# Wait for server to be ready
+echo "⏳ Waiting for streaming server to start..."
 sleep 15
 
-# Check if Shoutcast server is running
-if ! kill -0 $SHOUTCAST_PID 2>/dev/null; then
-    echo "❌ Shoutcast server failed to start"
-    echo "📋 Checking Shoutcast logs..."
-    if [ -f "$LOGS_DIR/sc_serv.log" ]; then
-        tail -20 "$LOGS_DIR/sc_serv.log"
+# Check if server is running
+if ! kill -0 $SERVER_PID 2>/dev/null; then
+    echo "❌ Streaming server failed to start"
+    echo "📋 Checking server logs..."
+    if [ -f "$LOGS_DIR/icecast.log" ]; then
+        tail -20 "$LOGS_DIR/icecast.log"
     fi
     echo "🔄 Starting fallback loop..."
     while true; do 
@@ -52,7 +52,7 @@ if ! kill -0 $SHOUTCAST_PID 2>/dev/null; then
     done
 fi
 
-echo "✅ Shoutcast server started (PID: $SHOUTCAST_PID)"
+echo "✅ Streaming server started (PID: $SERVER_PID)"
 
 # Count audio files
 AUDIO_COUNT=$(find "$CONTENT_DIR" -name "*.mp3" -o -name "*.aac" -o -name "*.ogg" 2>/dev/null | wc -l)
@@ -60,8 +60,8 @@ AUDIO_COUNT=$(find "$CONTENT_DIR" -name "*.mp3" -o -name "*.aac" -o -name "*.ogg
 if [ "$AUDIO_COUNT" -eq 0 ]; then
     echo "❌ No audio files found in $CONTENT_DIR"
     echo "💡 Add some MP3 files to the content directory"
-    echo "🔄 Shoutcast server will run without content"
-    echo "📡 Stream URL: http://localhost:8000"
+    echo "🔄 Streaming server will run without content"
+    echo "📡 Stream URL: http://localhost:8000/stream"
     echo "🌐 Web Interface: http://localhost:8001/"
     echo ""
     # Keep the script running to maintain the container
@@ -90,7 +90,7 @@ echo "✅ Playlist created with $(wc -l < "$PLAYLIST_FILE") entries"
 # Start infinite loop streaming
 echo "🚀 Starting infinite loop playback..."
 echo "🔄 Songs will play continuously until stopped"
-echo "📡 Stream URL: http://localhost:8000"
+echo "📡 Stream URL: http://localhost:8000/stream"
 echo "🌐 Web Interface: http://localhost:8001/"
 echo "🔑 Password: changeme"
 echo ""
@@ -98,14 +98,14 @@ echo ""
 # Log file for debugging
 LOG_FILE="/tmp/auto-play.log"
 
-# Start continuous streaming to Shoutcast
+# Start continuous streaming
 while true; do
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 Starting new playlist cycle..." | tee -a "$LOG_FILE"
     
-    # Stream the entire playlist to Shoutcast
+    # Stream the entire playlist
     ffmpeg -re -f concat -safe 0 -i "$PLAYLIST_FILE" \
            -acodec libmp3lame -ab 128k -f mp3 \
-           "http://localhost:8000/changeme" \
+           "icecast://source:changeme@localhost:8000/stream" \
            2>> "$LOG_FILE"
     
     # Check if FFmpeg exited normally
