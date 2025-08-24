@@ -18,9 +18,6 @@ RUN apt-get update && apt-get install -y \
 # Create shoutcast directory
 WORKDIR /opt/shoutcast
 
-# Create icecast user and group
-RUN groupadd -r icecast && useradd -r -g icecast icecast
-
 # Copy configuration files
 COPY icecast.xml /opt/shoutcast/icecast.xml
 COPY start-auto-play.sh /opt/shoutcast/
@@ -32,8 +29,8 @@ RUN mkdir -p /opt/shoutcast/content /opt/shoutcast/logs
 # Copy sample audio files (if any)
 COPY content/ /opt/shoutcast/content/
 
-# Set proper ownership
-RUN chown -R icecast:icecast /opt/shoutcast
+# Set proper ownership (use existing icecast user)
+RUN chown -R icecast:icecast /opt/shoutcast 2>/dev/null || true
 
 # Expose ports
 EXPOSE 8000 8001
