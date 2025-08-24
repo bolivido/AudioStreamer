@@ -1,55 +1,45 @@
-// Audio Streamer Configuration
+// AudioStreamer Configuration - Shoutcast Focused
 export const config = {
   // App settings
-  appName: 'Audio Streamer',
-  appDescription: 'Stream your favorite online radio stations',
+  appName: 'AudioStreamer',
+  appDescription: 'Stream live Shoutcast radio stations with real-time metadata',
   
-  // Working radio stream URLs - optimized for reliability
+  // Shoutcast radio stream URLs
   defaultStreams: [
     { 
-      name: 'Radio Paradise (Fast)', 
+      name: '🎵 Radio Paradise', 
       url: 'https://stream.radioparadise.com/aac-64',
-      description: 'Eclectic mix - optimized for speed'
+      description: 'Eclectic mix with rich Shoutcast metadata'
     },
     { 
-      name: 'SomaFM Groove Salad', 
+      name: '📻 SomaFM Groove Salad', 
       url: 'https://ice1.somafm.com/groovesalad-64-mp3',
-      description: 'Ambient beats - faster loading'
+      description: 'Ambient beats with live metadata'
     },
     { 
-      name: 'SomaFM Drone Zone', 
+      name: '🎧 SomaFM Drone Zone', 
       url: 'https://ice1.somafm.com/dronezone-64-mp3',
-      description: 'Atmospheric textures - optimized'
+      description: 'Atmospheric textures and ambient music'
     },
     { 
-      name: 'SomaFM Lush', 
+      name: '🌿 SomaFM Lush', 
       url: 'https://ice1.somafm.com/lush-64-mp3',
-      description: 'Female vocals - faster stream'
+      description: 'Female vocals and indie music'
     },
     { 
-      name: 'NTS Radio 1', 
+      name: '🇬🇧 NTS Radio 1', 
       url: 'https://stream.nts.live/nts1',
       description: 'London-based independent radio'
     },
     { 
-      name: 'FIP Radio', 
+      name: '🇫🇷 FIP Radio', 
       url: 'https://icecast.radiofrance.fr/fip-midfi.mp3',
       description: 'French eclectic music station'
     },
     { 
-      name: 'DI.FM Chillout', 
-      url: 'https://ice1.somafm.com/dronezone-64-mp3',
-      description: 'Chillout music - Shoutcast compatible'
-    },
-    { 
-      name: 'Groove Salad Classic', 
-      url: 'https://ice1.somafm.com/groovesalad-64-mp3',
-      description: 'Classic ambient - metadata rich'
-    },
-    { 
-      name: '🔄 My Test Shoutcast Server', 
-      url: 'http://localhost:8000/;',
-      description: 'Local Shoutcast server for testing metadata parsing'
+      name: '🚀 Railway Shoutcast Server', 
+      url: 'https://your-railway-app.railway.app:8000/;',
+      description: 'Your custom Shoutcast server for testing metadata parsing'
     }
   ],
   
@@ -58,19 +48,6 @@ export const config = {
     defaultVolume: 0.7,
     fadeInDuration: 500,
     fadeOutDuration: 500,
-  },
-  
-  // Auto-play settings
-  autoPlay: {
-    enabled: false, // Set to true to auto-play first song
-    delay: 1000, // Delay before starting playback (ms)
-  },
-  
-  // Reconnection settings
-  reconnection: {
-    maxAttempts: 5,
-    delay: 3000, // 3 seconds
-    backoffMultiplier: 1.5,
   },
   
   // Metadata polling
@@ -88,26 +65,13 @@ export const config = {
   },
   
   // Supported stream formats
-  supportedFormats: [
-    'icecast',
-    'shoutcast', 
-    'hls',
-    'mp3',
-    'aac',
-    'ogg'
-  ],
+  supportedFormats: ['mp3', 'aac', 'ogg'],
   
-  // CORS settings for development
-  cors: {
-    mode: 'cors',
-    credentials: 'omit',
+  // Shoutcast specific settings
+  shoutcast: {
+    metadataEnabled: true,
+    icyHeaders: true,
+    currentSongEndpoint: true,
+    userAgent: 'AudioStreamer/1.0'
   }
 };
-
-// Environment-specific overrides
-if (process.env.NODE_ENV === 'development') {
-  config.ui.showStreamUrl = true;
-  config.metadata.enabled = true;
-}
-
-export default config;

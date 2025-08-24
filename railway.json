@@ -1,24 +1,37 @@
 {
-  "$schema": "https://railway.app/railway.schema.json",
-  "build": {
-    "builder": "NIXPACKS"
-  },
-  "deploy": {
-    "startCommand": "cd server && npm install --production --no-optional && npm start",
-    "healthcheckPath": "/ping",
-    "healthcheckTimeout": 300,
-    "restartPolicyType": "ON_FAILURE",
-    "restartPolicyMaxRetries": 3
-  },
-  "volumes": [
+  "services": [
     {
-      "name": "uploads",
-      "mountPath": "/app/server/uploads",
-      "size": "1GB"
+      "name": "shoutcast-server",
+      "type": "docker",
+      "ports": [8000, 8001],
+      "environment": {
+        "SHOUTCAST_PORT": "8000",
+        "WEB_PORT": "8001",
+        "ADMIN_PASSWORD": "admin123",
+        "STREAM_PASSWORD": "changeme",
+        "STATION_NAME": "AudioStreamer Test Radio",
+        "STATION_GENRE": "Test",
+        "AUTO_PLAY": "true",
+        "CONTENT_DIR": "/opt/shoutcast/content"
+      },
+      "healthcheck": {
+        "path": "/",
+        "port": 8001,
+        "interval": "30s",
+        "timeout": "10s",
+        "retries": 3
+      },
+      "startCommand": "./start-auto-play.sh"
     }
   ],
-  "railway": {
-    "buildCommand": "echo 'No build needed'",
-    "startCommand": "cd server && npm start"
+  "variables": {
+    "SHOUTCAST_PORT": "8000",
+    "WEB_PORT": "8001",
+    "ADMIN_PASSWORD": "admin123",
+    "STREAM_PASSWORD": "changeme",
+    "STATION_NAME": "AudioStreamer Test Radio",
+    "STATION_GENRE": "Test",
+    "AUTO_PLAY": "true",
+    "CONTENT_DIR": "/opt/shoutcast/content"
   }
 }

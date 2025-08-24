@@ -5,7 +5,7 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
   const [showCustomInput, setShowCustomInput] = useState(false);
 
   const handleStreamSelect = (stream) => {
-    onStreamChange(stream.url);
+    onStreamChange(stream);
     setShowCustomInput(false);
     setCustomUrl('');
   };
@@ -13,7 +13,11 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
   const handleCustomUrlSubmit = (e) => {
     e.preventDefault();
     if (customUrl.trim()) {
-      onStreamChange(customUrl.trim());
+      onStreamChange({
+        name: 'Custom Stream',
+        url: customUrl.trim(),
+        description: 'Custom Shoutcast stream'
+      });
       setShowCustomInput(false);
       setCustomUrl('');
     }
@@ -30,10 +34,10 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
   return (
     <div className="card mb-6">
       <h2 className="text-xl font-semibold text-white mb-4 text-center">
-        Select Radio Stream
+        🎵 Select Shoutcast Stream
       </h2>
 
-      {/* Predefined Streams */}
+      {/* Predefined Shoutcast Streams */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-6">
         {defaultStreams.map((stream, index) => (
           <button
@@ -64,14 +68,14 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
         ))}
       </div>
 
-      {/* Custom URL Input */}
+      {/* Custom Shoutcast URL Input */}
       <div className="text-center">
         {!showCustomInput ? (
           <button
             onClick={() => setShowCustomInput(true)}
             className="btn-secondary"
           >
-            + Add Custom Stream URL
+            + Add Custom Shoutcast Stream
           </button>
         ) : (
           <form onSubmit={handleCustomUrlSubmit} className="space-y-3">
@@ -80,7 +84,7 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
                 type="url"
                 value={customUrl}
                 onChange={handleCustomUrlChange}
-                placeholder="https://example.com/stream"
+                placeholder="https://your-shoutcast-server.com:8000/;"
                 className="flex-1 px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
                 required
               />
@@ -107,10 +111,21 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
 
       {/* Help Text */}
       <div className="mt-4 text-center text-sm text-gray-400">
-        <p>Supported formats: Icecast, Shoutcast, HTTP Live Streaming (HLS)</p>
-        <p className="mt-1">The stream will automatically reconnect if the connection drops</p>
-        <p className="mt-1 text-green-400">✅ Try the pre-configured streams above - they are tested and working!</p>
+        <p>🎵 All streams support real-time Shoutcast metadata</p>
+        <p className="mt-1">📻 Live song titles, artist names, and station information</p>
+        <p className="mt-1 text-green-400">✅ Pre-configured streams are tested and working!</p>
         
+        {/* Shoutcast Features */}
+        <div className="mt-4 p-3 bg-blue-900/30 rounded-lg border border-blue-700">
+          <p className="text-blue-300 font-medium mb-2">🎯 Shoutcast Features:</p>
+          <ul className="text-xs text-gray-300 text-left space-y-1">
+            <li>• Real-time metadata updates every 10 seconds</li>
+            <li>• Live song titles and artist information</li>
+            <li>• Station name, genre, and bitrate display</li>
+            <li>• Automatic reconnection on connection drops</li>
+          </ul>
+        </div>
+
         {/* Troubleshooting Tips */}
         <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700">
           <p className="text-yellow-400 font-medium mb-2">💡 Troubleshooting Tips:</p>
@@ -119,6 +134,7 @@ const StreamConfig = ({ defaultStreams, onStreamChange, currentStream }) => {
             <li>• Check your internet connection</li>
             <li>• Some streams may take 10-15 seconds to start</li>
             <li>• Lower bitrate streams (64k) load faster than high bitrate (128k+)</li>
+            <li>• Ensure your Shoutcast server supports ICY metadata headers</li>
           </ul>
         </div>
       </div>
