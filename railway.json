@@ -4,16 +4,6 @@
       "name": "azuracast-radio",
       "type": "docker",
       "ports": [80, 8000],
-      "environment": {
-        "AZURACAST_APP_ENV": "production",
-        "AZURACAST_DB_HOST": "localhost",
-        "AZURACAST_DB_PORT": "3306",
-        "AZURACAST_DB_USERNAME": "azuracast",
-        "AZURACAST_DB_PASSWORD": "azuracast",
-        "AZURACAST_DB_DATABASE": "azuracast",
-        "AZURACAST_REDIS_HOST": "localhost",
-        "AZURACAST_REDIS_PORT": "6379"
-      },
       "healthcheck": {
         "path": "/",
         "port": 80,
@@ -22,15 +12,5 @@
         "retries": 3
       }
     }
-  ],
-  "variables": {
-    "AZURACAST_APP_ENV": "production",
-    "AZURACAST_DB_HOST": "localhost",
-    "AZURACAST_DB_PORT": "3306",
-    "AZURACAST_DB_USERNAME": "azuracast",
-    "AZURACAST_DB_PASSWORD": "azuracast",
-    "AZURACAST_DB_DATABASE": "azuracast",
-    "AZURACAST_REDIS_HOST": "localhost",
-    "AZURACAST_REDIS_PORT": "6379"
-  }
+  ]
 }
