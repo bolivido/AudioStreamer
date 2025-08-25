@@ -1,11 +1,14 @@
 FROM azuracast/azuracast:latest
 
-# Set required environment variables for AzuraCast
+# Set environment variables for external services
 ENV AZURACAST_APP_ENV=production
-ENV MARIADB_ROOT_PASSWORD=azuracast_root_password
-ENV MARIADB_DATABASE=azuracast
-ENV MARIADB_USER=azuracast
-ENV MARIADB_PASSWORD=azuracast_password
+ENV AZURACAST_DB_HOST=azuracast-db
+ENV AZURACAST_DB_PORT=3306
+ENV AZURACAST_DB_USERNAME=azuracast
+ENV AZURACAST_DB_PASSWORD=azuracast_password
+ENV AZURACAST_DB_DATABASE=azuracast
+ENV AZURACAST_REDIS_HOST=azuracast-redis
+ENV AZURACAST_REDIS_PORT=6379
 
 # Expose only essential ports
 EXPOSE 80 8000
