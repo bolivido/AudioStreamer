@@ -3,14 +3,7 @@
     {
       "name": "azuracast-radio",
       "type": "docker",
-      "ports": [80, 8000],
-      "healthcheck": {
-        "path": "/",
-        "port": 80,
-        "interval": "60s",
-        "timeout": "30s",
-        "retries": 5
-      }
+      "ports": [80, 8000]
     }
   ]
 }
