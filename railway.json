@@ -4,37 +4,13 @@
       "name": "azuracast-radio",
       "type": "docker",
       "ports": [80, 8000],
-      "environment": {
-        "AZURACAST_APP_ENV": "production",
-        "AZURACAST_DB_HOST": "localhost",
-        "AZURACAST_DB_PORT": "3306",
-        "AZURACAST_DB_USERNAME": "azuracast",
-        "AZURACAST_DB_PASSWORD": "azuracast_password",
-        "AZURACAST_DB_DATABASE": "azuracast",
-        "AZURACAST_REDIS_HOST": "localhost",
-        "AZURACAST_REDIS_PORT": "6379"
-      },
       "healthcheck": {
         "path": "/",
         "port": 80,
-        "interval": "30s",
-        "timeout": "10s",
-        "retries": 3
+        "interval": "60s",
+        "timeout": "30s",
+        "retries": 5
       }
-    },
-    {
-      "name": "azuracast-db",
-      "type": "mysql",
-      "environment": {
-        "MYSQL_ROOT_PASSWORD": "azuracast_root_password",
-        "MYSQL_DATABASE": "azuracast",
-        "MYSQL_USER": "azuracast",
-        "MYSQL_PASSWORD": "azuracast_password"
-      }
-    },
-    {
-      "name": "azuracast-redis",
-      "type": "redis"
     }
   ]
 }
