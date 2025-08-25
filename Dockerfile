@@ -3,9 +3,12 @@ FROM azuracast/azuracast:latest
 # Set minimal environment variables
 ENV AZURACAST_APP_ENV=production
 
-# Disable internal services that might cause timeouts
-ENV AZURACAST_DISABLE_DATABASE=true
-ENV AZURACAST_DISABLE_REDIS=true
+# Use SQLite database (built-in, no external dependencies)
+ENV AZURACAST_DB_TYPE=sqlite
+ENV AZURACAST_DB_DATABASE=/var/azuracast/db/azuracast.db
+
+# Use file-based cache instead of Redis
+ENV AZURACAST_CACHE_DRIVER=file
 
 # Fix Nginx symbolic link conflict
 RUN rm -f /etc/nginx/sites-enabled/default.vhost || true
