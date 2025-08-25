@@ -4,6 +4,13 @@
       "name": "azuracast-radio",
       "type": "docker",
       "ports": [80, 8000],
+      "environment": {
+        "AZURACAST_APP_ENV": "production",
+        "MARIADB_ROOT_PASSWORD": "azuracast_root_password",
+        "MARIADB_DATABASE": "azuracast",
+        "MARIADB_USER": "azuracast",
+        "MARIADB_PASSWORD": "azuracast_password"
+      },
       "healthcheck": {
         "path": "/",
         "port": 80,
