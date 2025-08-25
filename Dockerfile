@@ -7,6 +7,9 @@ ENV AZURACAST_APP_ENV=production
 ENV AZURACAST_DISABLE_DATABASE=true
 ENV AZURACAST_DISABLE_REDIS=true
 
+# Fix Nginx symbolic link conflict
+RUN rm -f /etc/nginx/sites-enabled/default.vhost || true
+
 # Expose only essential ports
 EXPOSE 80 8000
 
