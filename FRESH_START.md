@@ -1,72 +1,80 @@
-# 🚀 Fresh Start: Simple Streaming Server
+# 🚀 Fresh Start: AzuraCast Radio Station
 
 ## 🎯 **What This Is:**
 
-A **simple, reliable streaming server** built with Icecast2 that's guaranteed to work on Railway. This is a clean, minimal approach that focuses on getting streaming working immediately.
+A **completely fresh, clean AzuraCast deployment** designed specifically for Railway hosting. This is a new start without any legacy code or configuration issues.
 
 ## ✨ **What You'll Get:**
 
-- **📻 Live Streaming** - Icecast2 streaming server
-- **🌐 Web Interface** - Basic web interface on port 8001
-- **🎵 Stream Endpoint** - Streaming on port 8000
-- **🔧 Simple Management** - Easy to configure and maintain
-- **📱 Reliable Deployment** - Guaranteed to work on Railway
+- **🎵 Professional Radio Station** - Built on AzuraCast
+- **🌐 Web Management Interface** - Easy music and playlist management
+- **📻 Live Streaming** - Multiple streaming backends
+- **📱 Mobile Apps** - Manage your station from anywhere
+- **📊 Analytics** - Listener statistics and performance metrics
 
 ## 🚀 **Deployment:**
 
 ### **1. Automatic Railway Deployment:**
-- Railway will use a simple Ubuntu + Icecast2 setup
-- No complex dependencies or database requirements
-- Fast, reliable deployment
+- Railway will use the official AzuraCast Docker image
+- No complex configuration needed
+- Professional setup out of the box
 
-### **2. Access Your Stream:**
-- **Stream URL**: `https://your-app.railway.app:8000/stream`
-- **Web Interface**: `https://your-app.railway.app:8001/`
-- **Source Password**: `changeme`
+### **2. Access Your Station:**
+- **Web Interface**: `https://your-app.railway.app`
+- **Stream URL**: `https://your-app.railway.app:8000/`
+- **Default Admin**: Will be set during first setup
 
 ## 🎵 **Getting Started:**
 
-### **1. Deploy to Railway:**
-- This branch will deploy automatically
-- Simple Icecast2 server setup
-- No complex configuration needed
+### **1. First Access:**
+1. Go to your Railway app URL
+2. Complete the AzuraCast setup wizard
+3. Set your admin email and password
+4. Create your first radio station
 
-### **2. Test Your Stream:**
-- **Stream URL**: `https://your-app.railway.app:8000/stream`
-- **Web Interface**: `https://your-app.railway.app:8001/`
-- **Should work immediately** - No setup wizard needed
+### **2. Station Setup:**
+1. **Station Name**: Choose your station name
+2. **Description**: Add a description
+3. **Genre**: Select your music genre
+4. **Language**: Set your station language
 
-### **3. Start Broadcasting:**
-- Use FFmpeg or any streaming software
-- Connect to your stream endpoint
-- Start broadcasting your music!
+### **3. Upload Music:**
+1. Go to "Music Files" in your station
+2. Drag & drop MP3 files
+3. Add metadata (artist, title, album)
+4. Create playlists
+
+### **4. Start Broadcasting:**
+1. Go to "Streamers" in your station
+2. Enable the default streamer
+3. Your station is now live!
 
 ## 🔧 **Technical Details:**
 
 ### **Ports:**
+- **80**: Web interface (HTTP)
 - **8000**: Main stream
-- **8001**: Web interface
 
-### **Streaming:**
-- **Format**: MP3, AAC, OGG
-- **Bitrate**: 128k (configurable)
-- **Mount Point**: `/stream`
+### **Docker Image:**
+- **Base**: Official AzuraCast image
+- **Version**: Latest stable release
+- **Optimized**: For Railway hosting
 
-## 🎯 **Why This Simple Approach:**
+## 🎯 **Why This Fresh Start:**
 
-✅ **Guaranteed to Work** - No complex dependencies  
-✅ **Fast Deployment** - Simple Ubuntu + Icecast2  
-✅ **Reliable Streaming** - Battle-tested streaming server  
-✅ **Easy Management** - Simple configuration  
+✅ **No Legacy Code** - Clean, modern setup  
 ✅ **Railway Optimized** - Designed for Railway hosting  
+✅ **Official Image** - Uses AzuraCast's official Docker image  
+✅ **Simple Configuration** - Minimal, working setup  
+✅ **Professional Features** - Full radio station functionality  
 
 ## 🚀 **Next Steps:**
 
 1. **Deploy to Railway** - This branch will deploy automatically
-2. **Test Stream** - Access your stream endpoint
-3. **Start Broadcasting** - Connect your streaming software
-4. **Enjoy Streaming** - Your radio station is live!
+2. **Complete Setup** - Follow the AzuraCast wizard
+3. **Upload Music** - Add your music library
+4. **Start Broadcasting** - Your station goes live!
 
 ---
 
-**Simple, reliable, working streaming server! 🎵☁️**
+**Fresh start, clean slate, professional radio station! 🎵☁️**

@@ -1,32 +1,18 @@
-FROM ubuntu:20.04
+FROM azuracast/azuracast:latest
 
-# Set environment variables
-ENV DEBIAN_FRONTEND=noninteractive
+# Set required environment variables for AzuraCast
+ENV AZURACAST_APP_ENV=production
+ENV MARIADB_ROOT_PASSWORD=azuracast_root_password
+ENV MARIADB_DATABASE=azuracast
+ENV MARIADB_USER=azuracast
+ENV MARIADB_PASSWORD=azuracast_password
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    icecast2 \
-    ffmpeg \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
+# Expose only essential ports
+EXPOSE 80 8000
 
-# Create directories
-RUN mkdir -p /var/log/icecast2 /var/lib/icecast2
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:80/ || exit 1
 
-# Create icecast user
-RUN useradd -r -d /var/lib/icecast2 icecast
-
-# Copy configuration
-COPY icecast.conf /etc/icecast2/icecast.xml
-
-# Set permissions
-RUN chown -R icecast:icecast /var/log/icecast2 /var/lib/icecast2 /etc/icecast2
-
-# Expose ports
-EXPOSE 8000 8001
-
-# Switch to icecast user
-USER icecast
-
-# Start Icecast2
-CMD ["icecast2", "-c", "/etc/icecast2/icecast.xml"]
+# Start AzuraCast
+CMD ["docker-entrypoint.sh"]
